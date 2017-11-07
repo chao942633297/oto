@@ -63,14 +63,14 @@ class Base extends Model
     {
         try{
 
-            $result =  $this->save($param, ['id' => $param['id']]);
+            $result =  $this->allowField(true)->save($param, ['id' => $param['id']]);
 
             if(false === $result){
                 // 验证失败 输出错误信息
                 return msg(-1, '', $this->getError());
             }else{
 
-                return msg(1, url(''), '编辑成功');
+                return msg(1, url(''), '操作成功');
             }
         }catch(PDOException $e){
             return msg(-2, '', $e->getMessage());

@@ -121,22 +121,21 @@ class Member extends Base
             $offset = ($param['pageNumber'] - 1) * $limit;
 
             $where = [];
-            $where['status'] = 1;
+            if (!empty($param['status']) && $param['status'] != '-1') {
+                $where['status'] = trim($param['status']);
+            }
             $user = new Apply();
             $selectResult = $user->getListByWhere($where, $offset, $limit);
 
-
             // 拼装参数
             foreach($selectResult as $key=>$vo){
-                if ($vo['pid'] >0 ) {
-                    $selectResult[$key]['fathername'] = $vo->father->nickname;
-                    $selectResult[$key]['fatherphone'] = $vo->father->phone;                  
+                $selectResult[$key]['license'] = "<img src='".$vo->license."' width=45px height=45px>";
+                if ( $vo->status == 1) {
+                    $selectResult[$key]['operate'] = showOperate($this->makeButtons($vo['id']));
                 }else{
-                    $selectResult[$key]['fathername'] = '';
-                    $selectResult[$key]['fatherphone'] = '';
+                    $selectResult[$key]['operate']= '';
                 }
-                $selectResult[$key]['operate'] = showOperate($this->makeButton($vo['id']));
-                $selectResult[$key]['type'] = UsersModel::TYPE[$vo['type']];
+                $selectResult[$key]['status'] = Apply::STATUS[$vo['status']];
                 $selectResult[$key]['created_at'] = date('Y-m-d H:i:s',$vo['created_at']);
             }
 
@@ -146,8 +145,33 @@ class Member extends Base
             return json($return);
         }
 
-        $this->assign('type',UsersModel::TYPE);
+        $this->assign('status',Apply::STATUS);
         return $this->fetch();
+    }
+
+
+    #同意拒绝 申请联盟商铺
+    public function apply_yes()
+    {
+        $param = input('param.');
+        Db::startTrans();
+        try {
+            $apply = new Apply();
+
+            $flag = $apply->edited($param);
+
+            if ($param['status'] == 2) {
+
+                $uid = $apply->where('id',$param['id'])->value('uid');
+                
+                UsersModel::where('id',$uid)->update(['is_union'=>2]);
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            $flag = ['code'=>-1,'msg'=>$e->getMessage()];
+        }
+        return json(msg($flag['code'], url('member/apply'), $flag['msg']));
     }
 
 
@@ -254,4 +278,28 @@ class Member extends Base
 
     }
 
+
+    /**
+     * 拼装操作按钮
+     * @param $id
+     * @return array
+     */
+    private function makeButtons($id)
+    {   
+        return [
+            '同意' => [
+                'auth' => 'member/apply_yes',
+                'href' => "javascript:apply_yes(" .$id . ",". 2 .")",
+                'btnStyle' => 'primary',
+                'icon' => 'fa fa-paste'
+            ],
+            '驳回' => [
+                'auth' => 'member/apply_yes',
+                'href' => "javascript:apply_yes(" .$id . ",". 3 .")",
+                'btnStyle' => 'danger',
+                'icon' => 'fa fa-paste'
+            ]              
+        ];
+
+    }
 }
