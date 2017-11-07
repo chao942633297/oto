@@ -22,7 +22,7 @@
                     <h5>编辑用户</h5>
                 </div>
                 <div class="ibox-content">
-                    <form class="form-horizontal m-t" id="commentForm" method="post" action="{:url('users/userEdit')}">
+                    <form class="form-horizontal m-t" id="commentForm" method="post" action="{:url('member/userEdit')}">
                         <input type="hidden" name="id" value="{$user.id}">
                         <div class="form-group">
                             <label class="col-sm-3 control-label">手机号：</label>
@@ -40,31 +40,16 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">真实姓名：</label>
+                            <label class="col-sm-3 control-label">银行卡：</label>
                             <div class="input-group col-sm-4">
-                                <input id="truename" type="text" class="form-control" name="truename" required="" aria-required="true" value="{$user.truename}">
-
-                            </div>
-                        </div>
-                        {if $user.birthday == "0000-00-00"}
-                        <div class="form-group">
-                          <label class="col-sm-3 control-label">生日:</label>
-                          <div class="input-group col-sm-4">
-                            <input type="text" class="layui-input" name="birthday" id="birthday" placeholder="{$user.birthday}" readonly>
-                          </div>
-                        </div>
-                        {/if}
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">支付宝账号：</label>
-                            <div class="input-group col-sm-4">
-                                <input id="alipay_num" type="text" class="form-control" name="alipay_num" required="" aria-required="true" value="{$user.alipay_num}">
+                                <input id="bank" type="text" class="form-control" name="bank" required="" aria-required="true" value="{$user.bank}">
 
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-sm-3 control-label">微信账号：</label>
+                            <label class="col-sm-3 control-label">身份证：</label>
                             <div class="input-group col-sm-4">
-                                <input id="wechat_num" type="text" class="form-control" name="wechat_num" required="" aria-required="true" value="{$user.wechat_num}">
+                                <input id="card" type="text" class="form-control" name="card" required="" aria-required="true" value="{$user.card}">
 
                             </div>
                         </div>
@@ -151,14 +136,3 @@
 </body>
 </html>
 <script src="/static/admin/layui/layui.js" charset="utf-8"></script>
-<script>
-layui.use('laydate', function(){
-  var laydate = layui.laydate;
-  //时间选择器
-  laydate.render({
-    elem: '#birthday'
-    ,type: 'datetime'
-  });
-
-});   
-</script>
