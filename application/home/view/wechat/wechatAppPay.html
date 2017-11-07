@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>微信APP支付</title>
+<!-- <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">  -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+</head>
+<body>
+	<script src="__PUBLIC__/js/js_sdk20170302.js"></script>
+	<script src="__PUBLIC__/js/jquery-3.1.1.min.js"></script>
+
+　　<script type="text/javascript">
+		wxapppay()
+
+          //微信app支付
+          function wxapppay(){
+            var orderId = {$orderId};
+             type = "{$type}";
+            // alert(orderId)
+  　　　　　　$.ajax({
+  　　　　　　　　url: "http://ht.xtwhjy.com/Home/WechatApp/sendRequest", 
+                  data:{'orderId':orderId,'type':type},
+  　　　　　　　　dataType:'json',
+  　　　　　　　　async: true,
+  　　　　　　　　timeout: 200000,
+  　　　　　　　　success: function(data){　
+    // console.log(data)
+    // alert(123);
+                      if(data.status){
+                          payType(data.data,'WEIXIN','wxPayResult');
+                      }else{
+                          alert(data.error_message);
+                      }
+  　　　　　　　　}
+  　　　　　　});
+      　　}
+
+
+
+      //微信app支付回调
+  　　function wxPayResult(r) {
+  　　　　if(r == 0){
+  　　　　    setTimeout(function(){
+      　　　　    alert('支付成功！');
+                window.location.href="http://xtwhjy.com/xt/wy_my_parent.html";
+      　　　　}, 2000);
+  　　　　}else{
+  　　　　　　setTimeout(function(){
+      　　　　　　alert('支付失败请刷新后再试！');
+      　　　　}, 2000);
+          }   
+      }
+
+　　</script>
+
+</body>

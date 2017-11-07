@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="format-detection" content="telephone=no">
+    <title>润佳汽车</title>
+    <!-- 公共css -->
+    <link rel="stylesheet" href="__CSS__/common.css">
+    <link rel="stylesheet" href="/static/home/fonts/iconfont.css">
+    <!-- 公共js -->
+    <script src="__JS__/common.js"></script>
+    <script src="__JS__/jquery-3.1.1.min.js"></script>
+    <script src="/static/home/fonts/iconfont.js"></script>
+    <link rel="stylesheet" href="__CSS__/wy_main.css">
+</head>
+<title>润佳汽车保养-二维码</title>
+<style>
+    body{
+        background: #f6f6f6;
+    }
+    .header{
+        border-bottom: 1px solid #eaeaea;
+    }
+</style>
+<script src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+<script type="text/javascript">
+    wx.config({$jsapi_config});
+
+    wx.ready(function(){
+        wx.onMenuShareTimeline({
+            title: '润佳汽车', // 分享标题
+            link: "http://rj.runjiaby.com/home/wechat/BrowserType?param=&pid="+{$pid}, // 分享链接
+            imgUrl: 'http://{$_SERVER['HTTP_HOST']}/__IMG__/login_logo.png', // 分享图标
+            success: function() {
+
+                // 用户确认分享后执行的回调函数
+                window.href = "http://rj.runjiaby.com/home/wechat/BrowserType?param=&pid="+{$pid};
+            },
+            cancel: function() {
+
+                // 用户取消分享后执行的回调函数
+                window.href = "http://rj.runjiaby.com/home/wechat/BrowserType?param=&pid="+{$pid};
+            }
+        });
+        wx.onMenuShareAppMessage({
+            title: '润佳汽车', // 分享标题
+            desc: '润佳汽车保养', // 分享描述
+            link: "http://rj.runjiaby.com/home/wechat/BrowserType?param=&pid="+{$pid}, // 分享链接
+            imgUrl: 'http://{$_SERVER['HTTP_HOST']}/__IMG__/login_logo.png', // 分享图标
+            type: '', // 分享类型,music、video或link，不填默认为link
+            dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
+            success: function() {
+
+                 // 用户确认分享后执行的回调函数
+                window.href= "http://rj.runjiaby.com/home/wechat/BrowserType?param=&pid="+{$pid};
+            },
+            cancel: function() {
+
+                 // 用户取消分享后执行的回调函数
+                window.href= "http://rj.runjiaby.com/home/wechat/BrowserType?param=&pid="+{$pid};
+            }
+        });
+    });
+    wx.error(function(res){
+        // config信息验证失败会执行error函数，如签名过期导致验证失败，具体错误信息可以打开config的debug模式查看，也可以在返回的res参数中查看，对于SPA可以在这里更新签名。
+    });
+</script>
+<body>
+<!-- 头部 -->
+<header class="header wy_order_header">
+    <span>长按识别二维码</span>
+</header>
+<!-- 中间部分 -->
+<div class="content wy_QR_content">
+    <div class="wy_QR_TOP">
+        <img class="wy_img" src="__IMG__/login_logo.png" alt="">
+        <p>长按识别下方二维码&nbsp;关注公众号</p >
+
+        <img class="wy_fige" src="__IMG__/wy_fige.png" alt="">
+    </div>
+
+    <img class="wy_youlianQR" src="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket={$ticket}" alt="">
+</div>
+</body>
+</html>
+
+
+<!--< img src="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket={$ticket}">-->

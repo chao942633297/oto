@@ -1,0 +1,114 @@
+<!-- 数图谱 -->
+<link href="__CSS__/plugins/jsTree/style.min.css" rel="stylesheet">
+<script src="__JS__/plugins/jsTree/jstree.min.js"></script>
+<!-- 存 树 模块 -->
+<div class="col-sm-6" style="display: none" id="car_tree">
+    <div class="ibox float-e-margins">
+        <div class="ibox-content">
+
+            <div id="using_json"></div>
+
+        </div>
+    </div>
+    <input type="button" name="" id="subMit" value="确认" class="btn btn-primary ">
+</div>
+<script>
+    var selected = [];
+    //复选框改变状态时间
+    $('#using_json').on("changed.jstree", function (e, data) {
+        selected = data.selected;
+    });
+
+    //确认
+    $('#subMit').click(function(){
+        var data = selected.join(",");
+        $('#car_type').val(data);
+        layer.close(car_index);
+    });
+    //请求树谱需要数据
+    function int(){
+        $.ajax({
+            url:'./carList',
+            type:'post',
+            data:{},
+            success:function(data){
+                $('#using_json').data('jstree', false).empty();
+                var data = data;
+                 //出现选择框,并且选择上级默认选择所有下级 three_state
+                 //plugins:[ "checkbox" ],checkbox:{ cascade: "", three_state: true }
+                var msg = {plugins:[ "checkbox" ],checkbox:{ cascade: "", three_state: true },core:{themes:{"responsive": false}}};
+                msg.core.data = changeDataClass(data);
+                // console.log(msg);
+                $('#using_json').jstree(msg);
+
+                
+            }
+        });
+    }
+    //递归处理多为数组为jstree所需数据
+    function changeDataClass(data) {
+        var arr = [];
+        for (var i = 0; i < data.length; i++) {
+            var obj = {};
+            obj.id = data[i].id;
+            obj.text = data[i].name;
+            if (data[i].child) {
+                obj.icon = "fa fa-user";
+                obj.children = changeDataClass(data[i].child);
+            } else {
+                obj.icon = 'fa fa-user';
+            }
+            arr.push(obj);
+        }
+        return arr;
+    }
+</script> 
+<!-- 数图谱  结束--> 
+
+<!-- 多图片上传 -->
+<form class="form-horizontal m-t" enctype="multipart/form-data" id="commentForm" method="post" action="{:url('shop/add')}">
+    <div class="form-group">
+        <label for="">单图:</label>
+        <input type="file" name="img" id="" class="form-control">           
+    </div>
+	<div class="form-group">
+    	<label for="">多图: <font color='red'>按CTRL,选择多图片上传</font> </label>
+    	<input type="file" name="imgs[]" multiple="multiple" id="" class="form-control">           
+	</div>
+</form>
+<?php
+    #单图
+    $img = request()->file('img');
+    if ( isset($img) ) {
+        $upload = action('File/upload');
+        if ($upload['code'] == 2) {
+            return json(msg(-2,'', $upload['msg']));
+        }
+        $data['logo'] = $upload['data'];
+    }
+    #多图
+    $imgs = request()->file('imgs');
+    if ( isset($imgs) ) {
+        $uploads = action('File/upload_many');
+        if ($uploads['code'] == 2) {
+            return json(msg(-2,'', $uploads['msg']));
+        }
+        $data['lunbo'] = serialize($uploads['data']);
+    }
+<!-- 多图片上传结束 -->
+
+<!-- 富文本 -->
+<!-- 引入文件 -->
+<link href="__JS__/umeditor/themes/default/css/umeditor.css" type="text/css" rel="stylesheet">
+<script type="text/javascript" src="__JS__/umeditor/third-party/jquery.min.js"></script>
+<script type="text/javascript" src="__JS__/umeditor/third-party/template.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="__JS__/umeditor/umeditor.config.js"></script>
+<script type="text/javascript" charset="utf-8" src="__JS__/umeditor/umeditor.min.js"></script>
+<script type="text/javascript" src="__JS__/umeditor/lang/zh-cn/zh-cn.js"></script>
+<script type="text/javascript">
+    var um = UM.getEditor('myEditor');
+</script>
+
+<textarea id="myEditor" type="text" class="form-control myEditor" name="content" style="height:500px;"></textarea>
+
+<!-- 富文本结束 -->
