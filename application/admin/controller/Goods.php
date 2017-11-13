@@ -111,16 +111,13 @@ class Goods extends Base
             $param['updated_at'] = time();
             $flag = $good->editGoods($param);
             return json(['code' => $flag['code'], 'data' => $flag['data'], 'msg' => $flag['msg']]);
-
         }
         $id = input('param.id');
-        $class = db('class')->select();
-        $type = db('goods_type')->select();
+        $class = db('good_class')->select();
         $goods = $good->getOneGoods($id);
         $this->assign([
             'goods' => $goods,
             'class' => $class,
-            'type' => $type,
         ]);
         return $this->fetch();
     }
