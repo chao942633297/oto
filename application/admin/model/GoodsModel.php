@@ -6,7 +6,7 @@ use think\Model;
 
 class GoodsModel extends Model
 {
-    protected $table = 'sql_goods';
+    protected $table = 'good';
 
     public function getClass(){
         return $this->belongsTo('ClassModel','cid','id');

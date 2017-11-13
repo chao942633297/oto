@@ -16,7 +16,7 @@
 <!-- 上传轮播图 -->
 <form id="fmform" action="" method="POST" enctype="multipart/form-data">
     <input type="hidden" value="fmimg" name="imgtype" value="" />
-    <input id="fmimg" style="display: none;" name="files" type="file" onchange="upload('fmform','imgurl')"/>
+    <input id="fmimg" style="display: none;" name="img" type="file" onchange="upload('fmform','imgurl')"/>
 </form>
 <div class="wrapper wrapper-content animated fadeInRight">
     <!-- Panel Other -->
@@ -32,14 +32,7 @@
                         <label>商品名称：</label>
                         <input type="text" class="form-control" id="username" name="username">
                     </div>
-                    <div class="form-group">
-                        <label>品牌：</label>
-                        <input type="text" class="form-control" id="brank" name="brank">
-                    </div>
-                    <div class="form-group">
-                        <label>车系：</label>
-                        <input type="text" class="form-control" id="car" name="car">
-                    </div>
+
                     <div class="form-group">
                         <label>状态：</label>
                         <select class="form-control" name="status" id="status">
@@ -63,15 +56,13 @@
                 <div class="example">
                     <table id="cusTable" data-height="700">
                         <thead>
-                        <th data-field="name">商品名称</th>
+                        <th data-field="id">商品ID</th>
+                        <th data-field="name">商品分类</th>
                         <th data-field="img">展示图</th>
-                        <th data-field="price">本店售价</th>
-                        <th data-field="unit">单位</th>
-                        <th data-field="type">品牌</th>
-                        <th data-field="type_id">车系</th>
-                        <th data-field="remark">简要描述</th>
-                        <th data-field="sort">排序</th>
-                        <th data-field="is_delete">状态</th>
+                        <th data-field="price">商品价格</th>
+                        <th data-field="num">商品销量</th>
+                        <th data-field="status">状态</th>
+                        <th data-field="created_at">创建时间</th>
                         <th data-field="operate">操作</th>
                         </thead>
                     </table>
@@ -184,7 +175,7 @@
         var vars=$("#"+fromID);
         var options ={
             type:"POST",
-            url:"{:url('backsystem/File/upload')}",// 你的formid
+            url:"{:url('admin/File/upload')}",// 你的formid
             dataType:'json',
             contentType:"application/json;charset=utf-8",
             success:function(data){
