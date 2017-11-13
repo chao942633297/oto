@@ -13,8 +13,6 @@ class Goods extends Base
             $limit = $param['pageSize'];
             $offset = ($param['pageNumber'] - 1) * $limit;
             $where = $whereb = $wherec =$brank = [];
-            $brankid = [];
-            $carid = [];
             //商品名称查询
            /* if (isset($param['username']) && !empty($param['username'])) {
                 $where['name'] = ['like', '%' . $param['username'] . '%'];
@@ -23,10 +21,6 @@ class Goods extends Base
                 $where['is_delete'] = ['like', '%' . $param['status'] . '%'];
             }
 
-            //品牌查询
-            if (isset($param['brank']) && !empty($param['brank'])) {
-                $whereb['class'] = ['like', '%' . $param['brank'] . '%'];
-            }
             if($whereb){
                 $brankid = db('class')->where($whereb)->column('id');
             }
@@ -38,30 +32,18 @@ class Goods extends Base
                 $carid = db('goods_type')->where($wherec)->column('id');
             }*/
             $good = new GoodsModel();
-            $selectResult = $good->all(function($query)use($where,$offset,$limit,$brankid,$carid){
+            $selectResult = $good->all(function($query)use($where,$offset,$limit){
                 $query->order('id','desc');
                 $query->where($where);
-                if($brankid){
-                    $query->where('cid','in',$brankid);
-                }
-                if($carid){
-                    $query->where('type_id','in',$carid);
-                }
             });
-
-            $status = config('goods_status');
             foreach($selectResult as $key=>$vo){
 
                 $selectResult[$key]['status'] = $vo['status'] == 1 ? '上架' : '下架';
-                $selectResult[$key]['type'] = db('class')->where(['id'=>$vo['cid']])->value('class');
+                $selectResult[$key]['type'] = db('good_class')->where(['id'=>$vo['type']])->value('name');
 
-                $selectResult[$key]['type_id'] = db('goods_type')->where(['id'=>$vo['type_id']])->value('name');
                 $selectResult[$key]['img'] = "<img src='".$vo['img']."' width='50px' height='50px' />";
-                $operate = [
-                    '轮播图' => "javascript:goodsthumbnail('".$vo['id']."')",
-                    '编辑'   => url('goods/goodsEdit', ['id' => $vo['id']]),
-                ];
-                $selectResult[$key]['operate'] = showOperate($operate);
+                $selectResult[$key]['created_at'] = date('Y-m-d H:i:s',$vo['created_at']);
+                $selectResult[$key]['operate'] = showOperate($this->makeButton($vo['id']));
             }
             $return['total'] = $good->getAllGoods($where);  //总数据
             $return['rows'] = $selectResult;
@@ -78,17 +60,15 @@ class Goods extends Base
         if(request()->isPost()){
             $param = input('param.');
             $param = parseParams($param['data']);
-            $param['create_at'] = time();
+            $param['created_at'] = time();
             // var_dump($param);die;
             $good = new GoodsModel();
             $flag = $good->insertGoods($param);
             return json(['code' => $flag['code'], 'data' => $flag['data'], 'msg' => $flag['msg']]);
         }
-        $class = db('class')->select();
-        $type = db('goods_type')->select();
+        $class = db('good_class')->select();
         $this->assign([
             'class'=>$class,
-            'type'=>$type,
         ]);
         return $this->fetch();
 
@@ -97,33 +77,28 @@ class Goods extends Base
     //遍历商品的轮播图
     public function addGoodsThumbnail(){
         $param = input('param.');
-        // var_dump($param['id']);die;
         if (!empty($param['id'])) {
-            $thumbnail = db('lunbo')->where(['gid'=>$param['id'],'sort'=>2])->select();
+            $thumbnail = db('good_img')->where(['good_id'=>$param['id']])->select();
         }else{
             $thumbnail = [];
         }
-        // var_dump($thumbnail);return;
         return json(['code' => 1, 'data' => $thumbnail,'id'=>$param['id'], 'msg' => 'success']);
     }
 
     //添加单个商品的轮播图
     public function savephoto(){
         $param = input('param.');
-        $insert['gid'] = $param['gid'];
+        $insert['good_id'] = $param['gid'];
         $insert['imgurl'] = $param['imgurl'];
-        $insert['sort'] = 2;
-        $insert['create_at'] = time();
-        // array_shift($param);
-        // var_dump($param);die;
-        $result = db('lunbo')->insert($insert);
+        $insert['created_at'] = time();
+        $result = db('good_img')->insert($insert);
         return json(['code' => $result]);
     }
 
     public function delThumbnail(){
         $id = input('param.id');
         // var_dump($id);die;
-        $result = db('lunbo')->where("id=".$id)->delete();
+        $result = db('good_img')->where("id=".$id)->delete();
         return json(['code' => $result]);
     }
 
@@ -150,12 +125,28 @@ class Goods extends Base
         return $this->fetch();
     }
 
-    //删除角色
-    public function goodsDel(){
-        $id = input('param.goods_id');
-        $good = new GoodsModel();
-        $flag = $good->delGoods($id);
-        return json(['code' => $flag['code'], 'data' => $flag['data'], 'msg' => $flag['msg']]);
+    /**
+     * 拼装操作按钮
+     * @param $id
+     * @return array
+     */
+    private function makeButton($id)
+    {
+        return [
+            '编辑' => [
+                'auth' => 'goods/goodsedit',
+                'href' => url('goods/goodsEdit', ['id' => $id]),
+                'btnStyle' => 'primary',
+                'icon' => 'fa fa-paste'
+            ],
+            '轮播图' => [
+                'auth' => 'goods/goodsthumbnail',
+                'href' => "javascript:goodsthumbnail(" .$id .")",
+                'btnStyle' => 'danger',
+                'icon' => 'glyphicon glyphicon-picture'
+            ]
+        ];
     }
+
 
 }
