@@ -7,9 +7,9 @@ use think\Model;
 class Base extends Model
 {
     #物流类型
-    const WL_TYPE = [1=>'顺丰快递',2=>'圆通速递',3=>'中通速递',4=>'韵达快递',5=>'申通快递']; 
+    // const WL_TYPE = [1=>'顺丰快递',2=>'圆通速递',3=>'中通速递',4=>'韵达快递',5=>'申通快递']; 
     #物流编码
-    const WL_CODE = [1=>'SF',2=>'YTO',3=>'ZTO',4=>'YD',5=>'STO'];
+    // const WL_CODE = [1=>'SF',2=>'YTO',3=>'ZTO',4=>'YD',5=>'STO'];
 
     /**
      * 根据搜索条件获取列表信息
@@ -63,14 +63,14 @@ class Base extends Model
     {
         try{
 
-            $result =  $this->save($param, ['id' => $param['id']]);
+            $result =  $this->allowField(true)->save($param, ['id' => $param['id']]);
 
             if(false === $result){
                 // 验证失败 输出错误信息
                 return msg(-1, '', $this->getError());
             }else{
 
-                return msg(1, url(''), '编辑成功');
+                return msg(1, url(''), '操作成功');
             }
         }catch(PDOException $e){
             return msg(-2, '', $e->getMessage());
@@ -92,6 +92,15 @@ class Base extends Model
             return msg(-1, '', $e->getMessage());
         }
     }
+
+    /**
+    * 获取单条记录
+    *@param $id
+    */
+    public static function getOneInfo($id)
+    {
+        return self::where(['id'=>$id])->find();
+    } 
 
 
 }
