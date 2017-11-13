@@ -43,6 +43,7 @@ class Member extends Base
                     $selectResult[$key]['fathername'] = '';
                     $selectResult[$key]['fatherphone'] = '';
                 }
+                $selectResult[$key]['headimg'] = "<img src='".$vo->headimg."' width=50px; height=50px;>";
                 $selectResult[$key]['operate'] = showOperate($this->makeButton($vo['id']));
                 $selectResult[$key]['type'] = UsersModel::TYPE[$vo['type']];
                 $selectResult[$key]['created_at'] = date('Y-m-d H:i:s',$vo['created_at']);
@@ -215,10 +216,17 @@ class Member extends Base
         #获取提现金额
         $data['cash'] = abs( $log->getTypeBalance($id,4) );
 
-        #积分 -- 公用消费积分 --> 
+        #消费积分 -- 公用消费积分 --> 
         $all =  Db::table('integral')->where(['uid'=>$id,'type'=>1,'is_add'=>1])->sum('value');
         $all1 =  Db::table('integral')->where(['uid'=>$id,'type'=>1,'is_add'=>2])->sum('value');
+
+        #店铺积分
+        $all2 =  Db::table('integral')->where(['uid'=>$id,'type'=>2,'is_add'=>1])->sum('value');
+        $all3 =  Db::table('integral')->where(['uid'=>$id,'type'=>2,'is_add'=>2])->sum('value');
+
         $data['score'] = sprintf("%.2f",$all-$all1);
+        $data['shop_score'] = sprintf("%.2f",$all2-$all3);
+
 
         return json($data);          
     }

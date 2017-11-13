@@ -97,7 +97,7 @@ class NodeModel extends Model
     {
         try{
 
-            $this->save($param, ['id' => $param['id']]);
+            $this->allowField(true)->save($param, ['id' => $param['id']]);
             return msg(1, '', '编辑节点成功');
         }catch(PDOException $e){
 
