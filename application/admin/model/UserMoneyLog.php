@@ -12,11 +12,11 @@ class UserMoneyLog extends Base
     const STATUS = [1=>'正常',2=>'冻结'];
 
     #金额类别
-    const TYPE = [1=>'红包',2=>'分销佣金',3=>'购买商品',4=>'粮票提现',5=>'',6=>''];
+    const TYPE = [1=>'分享奖',2=>'感恩奖',3=>'共享奖',4=>'分销佣金',5=>'购买商品',6=>'粮票提现'];
     
 
     #关联users表
-    public function users()
+    public function user()
     {
         return $this->belongsTo('UsersModel','uid','id');
     }
