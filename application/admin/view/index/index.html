@@ -1,4 +1,41 @@
 {include file='public/header' /}
+<style>
+    .test{float:left;margin:2rem;background-color: #66B3FF;width:18rem;height:8rem;border-radius: .5rem;border:1px solid #66B3FF;}
+    /*.test .left{width:40%;margin:left;}*/
+    .test .right{width:100%;text-align: center;}
+    .test .right .font{color:white;font-size: 1.6rem;margin:1.5rem;line-height: 4rem;}
+    .test .right p{color:white;font-size: 2rem;text-align: center;}
+
+</style>
+<body class="gray-bg">
+<div class="test" style="background-color:#73BF00;">
+    <div></div>
+    <div class="right">
+        <span class="font">今日会员总量</span>
+        <p>{$user}人</p>
+    </div>
+</div>  
+<div class="test" style="background-color:#73BF00;">
+    <div></div>
+    <div class="right">
+        <span class="font">今日订单数量</span>
+        <p>{$order}元</p>
+    </div>
+</div> 
+<div class="test" style="background-color:#73BF00;">
+    <div></div>
+    <div class="right">
+        <span class="font">今日订单金额</span>
+        <p>{$todayOrderMoney}元</p>
+    </div>
+</div> 
+<div class="test" style="background-color:#73BF00;">
+    <div></div>
+    <div class="right">
+        <span class="font">订单总金额</span>
+        <p>{$orderMoney}元</p>
+    </div>
+</div>  
 <body class="gray-bg">
 <!-- <div class="col-sm-6" style="margin-top: 20px;">
     <div id="money" style="width: 710px;height:400px;"></div>
