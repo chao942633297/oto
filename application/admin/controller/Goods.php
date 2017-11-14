@@ -3,6 +3,7 @@
 namespace app\admin\controller;
 
 use app\admin\model\GoodsModel;
+use think\Log;
 
 class Goods extends Base
 {
@@ -12,28 +13,25 @@ class Goods extends Base
             $param = input('param.');
             $limit = $param['pageSize'];
             $offset = ($param['pageNumber'] - 1) * $limit;
-            $where = $whereb = $wherec =$brank = [];
+            $where = $wherec = $cids = [];
             //商品名称查询
-           /* if (isset($param['username']) && !empty($param['username'])) {
-                $where['name'] = ['like', '%' . $param['username'] . '%'];
+            if (isset($param['name']) && !empty($param['name'])) {
+                $where['name'] = ['like', '%' . $param['name'] . '%'];
             }
-            if (isset($param['status']) && $param['status'] != 0) {
-                $where['is_delete'] = ['like', '%' . $param['status'] . '%'];
+            if (isset($param['type']) && $param['type'] != 0) {
+                $where['type'] = $param['type'];
+            }
+            if (isset($param['class']) && $param['class'] != 0) {
+                $wherec['name'] = ['like','%' . $param['class'] . '%'];
+                $cids = db('good_class')->where($wherec)->column('id');
             }
 
-            if($whereb){
-                $brankid = db('class')->where($whereb)->column('id');
-            }
-            //车系查询
-            if (isset($param['car']) && !empty($param['car'])) {
-                $wherec['name'] = ['like', '%' . $param['car'] . '%'];
-            }
-            if($wherec){
-                $carid = db('goods_type')->where($wherec)->column('id');
-            }*/
             $good = new GoodsModel();
-            $selectResult = $good->all(function($query)use($where,$offset,$limit){
+            $selectResult = $good->all(function($query)use($where,$offset,$limit,$cids){
                 $query->order('id','desc');
+                if($cids){
+                    $query->where('class','in',$cids);
+                }
                 $query->where($where);
             });
             foreach($selectResult as $key=>$vo){
@@ -47,9 +45,11 @@ class Goods extends Base
             }
             $return['total'] = $good->getAllGoods($where);  //总数据
             $return['rows'] = $selectResult;
-            $return['data'] = $param;
+            $return['data'] = $cids;
             return json($return);
         }
+        $class = db('good_class')->select();
+        $this->assign('class',$class);
         return $this->fetch();
     }
 
