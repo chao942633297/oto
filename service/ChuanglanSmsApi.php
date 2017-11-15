@@ -10,10 +10,10 @@ class ChuanglanSmsApi{
 	const balance_url = "";
 
 	//创蓝账号 替换成你自己的账号
-	const account = "M3976523";
+	const account = "N4357536";
 
 	//创蓝密码 替换成你自己的密码
-	const password = "WadOkhgU3Vd6e1";
+	const password = "ByH7aSxoI16981";
 
 	/**
 	 * 发送短信
