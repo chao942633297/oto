@@ -4,20 +4,22 @@ namespace app\home\controller;
 use think\Controller;
 use app\admin\model\UsersModel;
 use service\Wechat as Wechats;
-
 /**
 * 
 */
 class Wechat extends Controller
 {
-
-	public function checkToken()
-	{
-		Wechats::check();
-	}
+	const URL = "http://www.oto178.com";
+	// public function checkToken()
+	// {
+		
+	// 	//ototoken178
+	// 	//94aAmItmgSULLpOHqtstJEyykjmHuciyMpzDs4gX6QE
+	// 	Wechats::checkToken('ototoken178');
+	// }
 
 	#微信监听时间
-	public function check()
+	public function checkToken()
 	{ 
     	#监听关注公众号事件
     	Wechats::addEvent('subscribe',function($result){
@@ -86,7 +88,8 @@ class Wechat extends Controller
 			return $this->fetch('followpublic');			
 
 		}else{
-			header('location:http://h.runjiaby.com/register.html?param=&pid='.$pid);
+			$url = self::URL;
+			header("location:$url");
 		}
 	}  
 
@@ -94,7 +97,8 @@ class Wechat extends Controller
     public function createmenu()
     {
     		$data = [
-				['name'=>'进入商城','event'=>'view','val'=>'http://rj.runjiaby.com/home/wechat/wechatLogin'],
+				['name'=>'进入商城','event'=>'view','val'=>'http://admin.oto178.com/home/wechat/wechatLogin?type=1'],
+				['name'=>'个人中心','event'=>'view','val'=>'http://admin.oto178.com/home/wechat/wechatLogin?type=2'],
 			];
 
 			dump(Wechats::menu_create($data));
@@ -104,7 +108,7 @@ class Wechat extends Controller
     public function wechatLogin()
     {	
     	#获取用户信息
-        $userinfo = Wechats::get_user_info('http://rj.runjiaby.com/home/wechat/wechatLogin');
+        $userinfo = Wechats::get_user_info('http://admin.oto178.com/home/wechat/wechatLogin');
 
         $user = UsersModel::where('openid',$userinfo['openid'])->find();
         if (!empty($user)) {
@@ -148,18 +152,9 @@ class Wechat extends Controller
 
 			#插入微信信息
 			$newid = UsersModel::insertGetId($data);
-			
-			// $users = UsersModel::where(['id'=>$newid]) -> find();
-			// if($users){
 			session('uid',$newid);
-				// if ($users['phone'] !='') {
-				// 	session('phone',$users->phone);
-				// 	header('location:http://h.runjiaby.com?param=1');
-				// }else{
-			$url = 'http://rj.runjiaby.com/home/wechat/wechatLogin';
+			$url = 'http://admin.oto178.com//home/wechat/wechatLogin';
 			header("location:$url");
-				// }
-			// }        	
         }
 
 
