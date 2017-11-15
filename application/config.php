@@ -70,7 +70,7 @@ return [
         # 开放平台引用秘钥
         'open_secret'=>'',
         # 微信公众号商户平台付key
-        'pay_key'=>'3a479e1f8c4ee6491922ee7016da2bbf',
+        'pay_key'=>'3a479e1f8c4ee6491922ee7016da2bbf',  //未修改
         # 微信开放商户平台key
         'open_pay_key'=>'',
         # 微信公众商户平台商户id
