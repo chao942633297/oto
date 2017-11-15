@@ -96,7 +96,8 @@
                             <div class="col-sm-3">
                                 <input type="hidden" value="{$goods.img}" name="img" id="img"/>
                                 <img id="imgurl" name="imgurl" style="width: 200px;height: 200px;" class="form-control"
-                                     src="__IMG__/default.png" onclick="javascript:$('#fmimg').click();"/>
+                                     {if condition="$goods.img"} src="{$goods.img}" {else/} src="__IMG__/default.png" {/if}
+                                      onclick="javascript:$('#fmimg').click();"/>
                             </div>
                         </div>
                         <div class="form-group">

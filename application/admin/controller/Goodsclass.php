@@ -6,11 +6,20 @@ use think\Controller;
 
 class Goodsclass extends Controller{
 
-    //分类列表
+    /**
+     * @return mixed|\think\response\Json
+     * 分类列表
+     */
     public function index(){
         if(request()->isAjax()) {
             $selectResult = db('good_class')->select();
+            $status = [
+                '1'=>'推荐',
+                '2'=>'未推荐'
+            ];
             foreach ($selectResult as $key => $val) {
+                $selectResult[$key]['img'] = "<img src='".$val['img']."' with='100px' height='100px' />";
+                $selectResult[$key]['status'] = $status[$val['status']];
                 $selectResult[$key]['created_at'] = date('Y-m-d H:i:s', $val['created_at']);
                 $selectResult[$key]['operate'] = showOperate($this->makeButton($val['id']));
             }
@@ -21,13 +30,34 @@ class Goodsclass extends Controller{
         return $this->fetch();
     }
 
+    /**
+     * @return mixed|\think\response\Json
+     * 增加分类
+     */
+    public function addclass(){
+         if(request()->isAjax()){
+             $param = input('param.');
+             $param = parseParams($param['data']);
+             $param['created_at'] = time();
+             $param['updated_at'] = time();
+             db('good_class')->insert($param);
+             return json(['code' => 1, 'data' => '', 'msg' => '添加分类成功']);
+         }
+        return $this->fetch();
+    }
 
+
+    /**
+     * @return mixed|\think\response\Json
+     * @throws \think\Exception
+     * 编辑分类
+     */
     public function editclass(){
         if(request()->isPost()){
-            $param['name'] = input('name');
-            $param['id'] = input('id');
+            $param = input('param.');
+            $param = parseParams($param['data']);
             $param['updated_at'] = time();
-            $flag = db('good_class')->update($param);
+            db('good_class')->update($param);
             return json(['code' => 1, 'data' => '', 'msg' => '编辑分类成功']);
         }
         $id = input('param.id');

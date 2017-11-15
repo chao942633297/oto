@@ -21,13 +21,14 @@ class File extends Controller
                 // $image = \think\Image::open('.'.$imgpath);
                 // 按照原图的比例生成一个最大为150*150的缩略图并保存为thumb.jpg
                 // $image -> thumb(600, 600) -> save('.'.$imgpath);//直接把缩略图覆盖原图
-
-                return ['code' => 1, 'data' =>WAB_NAME.$imgpath, 'msg' =>'上传成功'];
+                $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+                return json(['code' => 1, 'data' => $protocol.$_SERVER['HTTP_HOST'].$imgpath, 'msg' =>'上传成功']);
             }else{
                 // 上传失败获取错误信息
                 return ['code' => 2, 'data' =>'', 'msg' =>$file->getError()];
             }
         }
+        return 1;
     }
 
     #多图片上传
@@ -48,7 +49,8 @@ class File extends Controller
                 // $image = \think\Image::open('.'.$imgpath);
                 // 按照原图的比例生成一个最大为150*150的缩略图并保存为thumb.jpg
                 // $image -> thumb(600, 600) -> save('.'.$imgpath);//直接把缩略图覆盖原图
-                $Path[] = WAB_NAME.$imgpath;
+                $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+                $Path[] = $protocol.$_SERVER['HTTP_HOST'].$imgpath;
             }else{
                 // 上传失败获取错误信息
                 return ['code' => 2, 'data' =>'', 'msg' =>$file->getError()];
