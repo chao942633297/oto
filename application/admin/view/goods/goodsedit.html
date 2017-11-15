@@ -77,6 +77,14 @@
                                        aria-required="true">
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">分享粮票：</label>
+                            <div class="input-group col-sm-4">
+                                <input id="rebate" type="text" class="form-control" value="{$goods.rebate}" name="rebate" required=""
+                                       aria-required="true">
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label class="col-sm-3 control-label">商品价格：</label>
                             <div class="input-group col-sm-3">
@@ -112,6 +120,12 @@
                                 <textarea id="myEditor2" type="text" class="form-control myEditor" name="content" style="height:500px;">{$goods.content}</textarea>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">是否推荐：</label>
+                            是: <input type="radio" value="1" name="recommend" {if $goods.recommend==1}checked{/if} style="margin-top:11px;margin-right:20px;">
+                            否: <input type="radio" value="2" name="recommend" >
+                        </div>
+
                         <div class="form-group">
                             <label class="col-sm-3 control-label">是否上架：</label>
                             是: <input type="radio" value="1" name="status" {if $goods.status==1}checked{/if} style="margin-top:11px;margin-right:20px;">

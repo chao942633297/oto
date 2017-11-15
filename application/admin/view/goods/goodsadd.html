@@ -82,6 +82,14 @@
                                        aria-required="true">
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">分享粮票：</label>
+                            <div class="input-group col-sm-3">
+                                <input id="rebate" type="text" class="form-control" name="rebate" required=""
+                                       aria-required="true">
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label class="col-sm-3 control-label">商品库存：</label>
                             <div class="input-group col-sm-3">
@@ -109,6 +117,12 @@
                                 <textarea id="myEditor2" type="text" class="form-control myEditor" name="content" style="height:500px;"></textarea>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">是否推荐：</label>
+                            是: <input type="radio" value="1" name="recommend" style="margin-top:11px;margin-right:20px;">
+                            否: <input type="radio" value="2" name="recommend" >
+                        </div>
+
                         <div class="form-group">
                             <label class="col-sm-3 control-label">是否上架：</label>
                             是: <input type="radio" value="1" name="status" style="margin-top:11px;margin-right:20px;">
@@ -161,6 +175,7 @@
                 jz = layer.load(0, {shade: false}); //0代表加载的风格，支持0-2
             },
             error: function (request) {
+
                 layer.close(jz);
                 swal("网络错误!", "", "error");
             },

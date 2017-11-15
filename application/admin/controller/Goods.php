@@ -35,8 +35,8 @@ class Goods extends Base
                 $query->where($where);
             });
             foreach($selectResult as $key=>$vo){
-
                 $selectResult[$key]['status'] = $vo['status'] == 1 ? '上架' : '下架';
+                $selectResult[$key]['recommend'] = $vo['recommend'] == 1 ? '推荐' : '未推荐';
                 $selectResult[$key]['type'] = db('good_class')->where(['id'=>$vo['type']])->value('name');
 
                 $selectResult[$key]['img'] = "<img src='".$vo['img']."' width='50px' height='50px' />";
