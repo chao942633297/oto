@@ -12,8 +12,8 @@ class GoodsModel extends Model
         return $this->belongsTo('ClassModel','cid','id');
     }
 
-    public function lunbo(){
-        return $this->hasMany(LunboModel::class,'gid');
+    public function goodImg(){
+        return $this->hasMany(GoodImgModel::class,'good_id');
     }
 
     public function orderDetail(){
