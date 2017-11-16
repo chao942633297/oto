@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="oto" uploadOnCheckin="91def699-b68c-4a6f-8130-d071f89180f8">
+  <component name="PublishConfigData" serverName="oto" uploadOnCheckin="7d1838e2-71d9-429a-9eec-3e84a771c631">
+    <serverData>
+      <paths name="oto">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
     <option name="myUploadOnCheckinName" value="oto" />
   </component>
 </project>

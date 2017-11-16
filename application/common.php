@@ -133,7 +133,10 @@ function put_excel($filename,$data){//导出Excel
 //随机生成唯一订单号
 function order_sn(){
     $yCode = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z');
-    return (String) $yCode[intval(date('Y')) - 2011] . strtoupper(dechex(date('m'))) . date('d') .time(). substr(microtime(), 2, 5) . sprintf('%02d', rand(0, 99));
+    do{
+        $order_num = (String) $yCode[intval(date('Y')) - 2011] . strtoupper(dechex(date('m'))) . date('d') .time(). substr(microtime(), 2, 5) . sprintf('%02d', rand(0, 99));
+    }while(\think\Db::table('order')->where('pay_order_num',$order_num)->count() > 0);
+    return $order_num;
 }
 
 //令牌
