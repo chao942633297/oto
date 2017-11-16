@@ -3,20 +3,20 @@
 namespace app\admin\model;
 
 use think\Model;
-#用户管理模型
-class UserMoneyLog extends Base
+#积分模型
+class Integral extends Base
 {
     // 确定链接表名
-    protected $table = 'user_money_log';
+    protected $table = 'integral';
     #金额状态
     const STATUS = [1=>'正常',2=>'冻结'];
 
     #金额类别
-    const TYPE = [1=>'分享奖',2=>'感恩奖',3=>'共享奖',4=>'分销佣金',5=>'购买商品',6=>'粮票提现'];
+    const TYPE = [1=>'红包',2=>'分销佣金',3=>'购买商品',4=>'粮票提现',5=>'',6=>''];
     
 
     #关联users表
-    public function user()
+    public function users()
     {
         return $this->belongsTo('UsersModel','uid','id');
     }
