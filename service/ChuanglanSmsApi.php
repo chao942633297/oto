@@ -112,16 +112,17 @@ class ChuanglanSmsApi{
 	{
 		$clapi  = new ChuanglanSmsApi();
 		$code = mt_rand(1000,9999);
-		$result = $clapi->sendSMS($phone, '【欧凸欧商城】您好，您的验证码是%%%%<<<<<<<<<'. $code);
+		$result = $clapi->sendSMS($phone, '您的验证码是'.$code.'，请在10分钟内填写，切勿将验证码泄露于他人。【欧凸欧商城】');
 		if(!is_null(json_decode($result))){
 			$output=json_decode($result,true);
 			if(isset($output['code'])  && $output['code']=='0'){
-				return ['code'=>true,'msg'=>'发送成功','data'=>$code];
+
+				return ['code'=>1,'msg'=>'发送成功','data'=>$code];
 			}else{
-				return ['code'=>false,'msg'=>$output['errorMsg'],'data'=>$code];
+				return ['code'=>-1,'msg'=>$output['errorMsg'],'data'=>$code];
 			}
 		}else{
-				return ['code'=>false,'msg'=>$result,'data'=>$code];;
+				return ['code'=>-1,'msg'=>$result,'data'=>$code];;
 		}
 
 	}

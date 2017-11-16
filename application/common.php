@@ -15,7 +15,7 @@ function qrcode($param,$level=3,$size=4){
 	$errorCorrectionLevel =intval($level) ;//容错级别 
 	$matrixPointSize = intval($size);//生成图片大小 
 	//生成二维码图片 
-    $to_url = WAB_NAME."/home/wechat/BrowserType?param=".$param;
+    $to_url = ADMIN_URL."/home/wechat/BrowserType?param=".$param;
 	$object = new \QRcode();
 	$img = $object->png($to_url,$url, $errorCorrectionLevel, $matrixPointSize, 2,false);
 }

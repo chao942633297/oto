@@ -5,6 +5,7 @@ use app\admin\model\UsersModel;
 
 use think\Controller;
 use think\Db;
+use service\Wechat as Wechats;
 #用户管理
 class User extends Base
 {	
@@ -17,6 +18,12 @@ class User extends Base
 		$this->userId = session('uid');
 	}
 
+	#根据id获取用户信息
+	public function getUserInfoById()
+	{
+		$user = UsersModel::where('id',$this->userId)->find();
+		return json(['status'=>1,'msg'=>'ok','data'=>$user]);
+	}
 
 	#用户二维码页面
 	public function qrcode()
@@ -30,7 +37,7 @@ class User extends Base
 		qrcode($param);
 		#取出生成的二维码
 		$data = [];
-		$data['path'] = WAB_NAME.'/uploads/qrcode/'.$param.'.png';
+		$data['path'] = ADMIN_URL.'/uploads/qrcode/'.$param.'.png';
 		$data['username'] = $user->nickname;
 		$data['headimg'] = $user->headimg;
 		$data['unique'] = $param;
@@ -43,6 +50,23 @@ class User extends Base
 			$data['jsapi_config'] = $jsapi_config;
 		}
 		return jsonp(['status'=>200,'message'=>'成功生成二维码','data'=>$data]);
+	}
+
+
+	#编辑用户信息
+	public function doEdit()
+	{
+		$param = input('param.');
+
+		if ($param['sex'] == 0) {
+			return json(['status'=>-1,'msg'=>'选择性别']);
+		}
+		$model = new UsersModel();
+		$result = $model->allowField(true)->save($param);
+		if ($result) {
+			return json(['status'=>1,'msg'=>'编辑成功']);
+		}
+			return json(['status'=>-1,'msg'=>'提交失败']);
 	}
 
 
