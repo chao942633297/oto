@@ -48,7 +48,7 @@ class Order extends Controller
 
             	$selectResult[$key]['username'] = $vo->user['nickname'];
             	$selectResult[$key]['userphone'] = $vo->user['phone'];
-                $selectResult[$key]['person'] = $vo->orderInfo['person'];
+                $selectResult[$key]['person'] = $vo->orderInfo['name'];
                 $selectResult[$key]['address'] = $vo->orderInfo['province'].$vo->orderInfo['city'].$vo->orderInfo['area'].$vo->orderInfo['address'];
                 $selectResult[$key]['operate'] = showOperate($this->makeButton($vo['id'], $vo['status']));
                 #订单状态

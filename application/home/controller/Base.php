@@ -6,11 +6,11 @@ use think\Controller;
 class Base extends Controller
 {	
 	
-	public function __construct()
+	public function _initialize()
 	{
-		parent::__construct();
-		if (!isset(session('uid'))) {
-			return json(['status'=>2000,'msg'=>'请登录']);
+		session('uid',14);
+		if (null === session('uid')) {
+			json(['status'=>2000,'msg'=>'请登录'])->send();
 		}
 	}
 
