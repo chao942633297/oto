@@ -38,18 +38,38 @@
                                 <input id="nickname" type="text" class="form-control" name="nickname" required="" aria-required="true" value="{$user.nickname}">
                             </div>
                         </div>
-
-                        <div class="form-group">
-                            <label class="col-sm-3 control-label">银行卡：</label>
-                            <div class="input-group col-sm-4">
-                                <input id="bank" type="text" class="form-control" name="bank" required="" aria-required="true" value="{$user.bank}">
-
-                            </div>
-                        </div>
                         <div class="form-group">
                             <label class="col-sm-3 control-label">身份证：</label>
                             <div class="input-group col-sm-4">
                                 <input id="card" type="text" class="form-control" name="card" required="" aria-required="true" value="{$user.card}">
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">开户行：</label>
+                            <div class="input-group col-sm-4">
+                                <input id="bank_name" type="text" class="form-control" name="bank_name" required="" aria-required="true" value="{$user.bank['bank_name']}">
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">开户人：</label>
+                            <div class="input-group col-sm-4">
+                                <input id="bank_person" type="text" class="form-control" name="bank_person" required="" aria-required="true" value="{$user.bank['bank_person']}">
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">银行卡号：</label>
+                            <div class="input-group col-sm-4">
+                                <input id="bank_id" type="text" class="form-control" name="bank_id" required="" aria-required="true" value="{$user.bank['bank_id']}">
+
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 control-label">开户支行：</label>
+                            <div class="input-group col-sm-4">
+                                <input id="bank_zname" type="text" class="form-control" name="bank_zname" required="" aria-required="true" value="{$user.bank['bank_zname']}">
 
                             </div>
                         </div>

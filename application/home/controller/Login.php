@@ -76,7 +76,7 @@ class Login extends Controller
 
 	}
 
-	#忘记密码
+	#忘记密码/修改登录密码
 	public function forgetPwd()
 	{
 		$param = input('param.');
@@ -103,6 +103,43 @@ class Login extends Controller
 		$data['password'] = md5($param['password']);
 		$data['updated_at'] = time();
 		#修改用户密码插入表中
+		$result = $model->allowField(true)->save($data,['id'=>$data['id']]);
+		if ($result== 1) {
+			return json(['status'=>1,'msg'=>'修改成功']);
+		}
+		return json(['status'=>-1,'msg'=>'修改失败']);
+	}
+	#修改支付密码
+	public function forgetPayPwd()
+	{
+		$param = input('param.');
+		$model = new UsersModel();
+		if (!preg_match("/^1[34578]\d{9}$/", $param['phone'])) {
+			return json(['status'=>-1,'msg'=>'手机号格式错误']);	
+		}	
+		$own = $model->where('phone',$param['phone'])->find();
+		if (empty($own)) {
+			return json(['status'=>-1,'msg'=>'此用户不存在']);
+		}
+
+		if(!preg_match('/^\d*$/',$param['password'])){
+			return json(['status'=>-1,'msg'=>'支付密码格式不对']);
+		}
+		#判断验证码和手机号
+		$check = PhoneCode::checkCode($param['phone'],$param['code']);
+		if (!$check) {
+			return json(['status'=>-1,'msg'=>'验证码错误']);
+		}
+		#再次确认密码
+		if ($param['password'] != $param['repassword']) {
+			return json(['status'=>-1,'msg'=>'两次输入密码不一致']);
+		}
+
+		$data = [];
+		$data['id'] = $own['id'];
+		$data['pay_password'] = md5($param['password']);
+		$data['updated_at'] = time();
+		#修改用户支付密码插入表中
 		$result = $model->allowField(true)->save($data,['id'=>$data['id']]);
 		if ($result== 1) {
 			return json(['status'=>1,'msg'=>'修改成功']);

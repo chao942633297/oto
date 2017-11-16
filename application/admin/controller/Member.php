@@ -161,13 +161,15 @@ class Member extends Base
         try {
             $apply = new Apply();
 
-            $flag = $apply->edited($param);
 
             if ($param['status'] == 2) {
-
+                $flag = $apply->edited($param);
                 $uid = $apply->where('id',$param['id'])->value('uid');
                 
                 UsersModel::where('id',$uid)->update(['is_union'=>2]);
+            }else{
+            $param['is_del'] = 1;
+            $flag = $apply->edited($param);
             }
             Db::commit();
         } catch (Exception $e) {
@@ -187,7 +189,12 @@ class Member extends Base
         if(request()->isPost()){
 
             $param = input('post.');
-
+            $data = [];
+            $data['bank_name'] = $param['bank_name'];       //开户行
+            $data['bank_person'] = $param['bank_person'];       //开户人
+            $data['bank_id'] = $param['bank_id'];       //银行卡号
+            $data['bank_zname'] = $param['bank_zname'];     //开户支行
+            $param['bank'] = serialize($data);
             $flag = $user->edited($param);
             $this->getSql($user);
 
@@ -195,8 +202,9 @@ class Member extends Base
         }
 
         $id = input('param.id');
-
-        $this->assign('user',$user->getOneInfo($id));
+        $data = $user->getOneInfo($id);
+        $data['bank'] = unserialize($data->bank);
+        $this->assign('user',$data);
         return $this->fetch();
     }
 

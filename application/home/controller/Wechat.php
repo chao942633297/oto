@@ -268,7 +268,7 @@ class Wechat extends Controller
 			$result = $model->allowField(true)->save($data,['phone'=>$param['phone']]);
 			if ($result && $result1) {
 				Db::commit();
-				return ['status'=>1,'msg'=>'绑定成功'];
+				return ['status'=>200,'msg'=>'绑定成功'];
 			}
 		} catch (Exception $e) {
 			Db::rollback();
@@ -302,7 +302,7 @@ class Wechat extends Controller
 			}
 		}
 		// $res = ChuanglanSmsApi::sendCode($param['phone']);	//发短信接口
-		$res = ['code'=>1,'data'=>'1111'];
+		$res = ['code'=>200,'data'=>'1111'];
 		#判断短信平台发短信是否成功
 		if ($res['code'] == 1) {
 			$PhoneCode = new PhoneCode();

@@ -11,4 +11,8 @@ class UsersModel extends Base
     
     const TYPE = [1=>'普通用户',2=>'合伙人'];
 
+    public function father()
+    {
+    	return $this->belongsTo('UsersModel','pid','id');
+    }
 }
