@@ -43,7 +43,7 @@ class User extends Base
 		$data['unique'] = $param;
 		if (IS_WECHAT) {
 			#设置session shareUrl
-			session('shareUrl','http://www.oto178.com/code.html?unique='.$param);
+			session('shareUrl',WEB_URL.'/register.html?unique='.$param);
 			# 获取jsapi
 			$jsapi_config = Wechats::get_jsapi_config(['onMenuShareTimeline','onMenuShareAppMessage'],false,false);
 			# 分配JSapi配置

@@ -42,12 +42,29 @@ class Goods extends Controller
     {
         $goodId = $request->param('goodId');
         $good = GoodsModel::get($goodId);
-        if(empty($good)){
-            return json(['msg'=>'商品信息错误','code'=>200]);
+        if (empty($good)) {
+            return json(['msg' => '商品信息错误', 'code' => 200]);
         }
         $return = [];
+        $return['id'] = $good['id'];
         $return['img'] = $good['goodImg'];
         $return['name'] = $good['name'];
+        $return['price'] = $good['price'];
+        $return['rebate'] = $good['rebate'];
+        $return['num'] = $good['num'];
+        $return['content'] = $good['content'];
+        return json(['data' => $return, 'msg' => '查询成功', 'code' => 200]);
+    }
+
+
+    /**
+     * 商品参数
+     */
+    public function goodsParam(Request $request)
+    {
+        $goodId = $request->param('goodId');
+        $goodparam = Db::table('good')->where('id', $goodId)->value('parameter');
+        return json(['data' => $goodparam, 'msg' => '查询成功', 'code' => 200]);
     }
 
 
