@@ -42,10 +42,12 @@
                         <th data-field="fathername">上级昵称</th>
                         <th data-field="fatherphone">上级手机号</th>
                         <th data-field="nickname">昵称</th>
+                        <th data-field="headimg">头像</th>
                         <th data-field="phone">手机号</th>
                         <th data-field="type">用户身份</th>
                         <th data-field="bank">银行卡</th>
                         <th data-field="card">身份证</th>
+                        <th data-field="is_union">是否为联盟商家</th>
                         <th data-field="created_at">注册时间</th>
                         <th data-field="operate">操作</th>
                         </thead>
@@ -64,7 +66,8 @@
         <th>冻结粮票</th>
         <th>红包</th>
         <th>分销佣金</th>
-        <th>积分</th>
+        <th>消费积分</th>
+        <th>店铺积分</th>
         <th>提现金额</th>
     </thead>
     <tbody id="account_content">
@@ -137,6 +140,7 @@
             content += '<td>'+res.red+'</td>';
             content += '<td>'+res.distribution+'</td>';
             content += '<td>'+res.score+'</td>';
+            content += '<td>'+res.shop_score+'</td>';
             content += '<td>'+res.cash+'</td>';
             content += '</tr>';
             account_content.append(content);

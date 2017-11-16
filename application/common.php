@@ -1,22 +1,21 @@
 <?php
 // 应用公共文件
 use think\Session;
-use app\admin\model\Users;
 
 /**
  * 生成二维码
- * @param int $id 
+ * @param int $param 
  * @param $level 容错等级
  * @param $size 图片大小
  * @return 
  */
-function qrcode($id,$level=3,$size=4){
+function qrcode($param,$level=3,$size=4){
 	vendor('phpqrcode.phpqrcode');
-	$url = "./uploads/qrcode/$id.png";
+	$url = "./uploads/qrcode/$param.png";
 	$errorCorrectionLevel =intval($level) ;//容错级别 
 	$matrixPointSize = intval($size);//生成图片大小 
 	//生成二维码图片 
-    $to_url = "http://rj.runjiaby.com/home/wechat/BrowserType?param=&pid=".$id;
+    $to_url = ADMIN_URL."/home/wechat/BrowserType?param=".$param;
 	$object = new \QRcode();
 	$img = $object->png($to_url,$url, $errorCorrectionLevel, $matrixPointSize, 2,false);
 }

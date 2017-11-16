@@ -2,7 +2,7 @@
 
 namespace app\admin\controller;
 use app\admin\model\NodeModel;
-use app\admin\model\Orders;
+use app\admin\model\Order as Orders;
 use app\home\model\CashRecord;
 use app\admin\model\UsersModel;
 
@@ -26,26 +26,25 @@ class Index extends Base
      */
     public function indexPage()
     {   
-        // #平台收到的钱
-        // $getMoney = self::getMoney();
-        
-        // #平台支出的钱
-        // $putMoney = self::putMoney();
+        $t = time();
+        $start_time = mktime(0,0,0,date("m",$t),date("d",$t),date("Y",$t));  //当天开始时间
+        $end_time = mktime(23,59,59,date("m",$t),date("d",$t),date("Y",$t)); //当天结束时间
 
-        // #获取用户类别所占人数
-        // $user = self::getUserTypeNum();
+        #今日注册用户数量
+        $user = UsersModel::whereBetween('created_at',[$start_time,$end_time])->count();
 
-        // #获取消费用户/未消费用户
-        // $payUser = self::getUserIsPay();
+        #今日订单数量
+        $order = Orders::whereBetween('created_at',[$start_time,$end_time])->where('status','>',1)->count();
 
-        // #获取一周之内订单数量走向
-        // $order = self::order();
+        #订单总额
+        $orderMoney = Orders::where('status','>',1)->sum('real_price');
+        #今日订单金额
+        $todayOrderMoney = Orders::where('status','>',1)->whereBetween('created_at',[$start_time,$end_time])->sum('real_price');
 
-        // $this->assign('getMoney',$getMoney);
-        // $this->assign('putMoney',$putMoney);
-        // $this->assign('user',$user);
-        // $this->assign('payUser',$payUser);
-        // $this->assign('order',$order);
+        $this->assign('user',$user);
+        $this->assign('order',$order);
+        $this->assign('orderMoney',$orderMoney);
+        $this->assign('todayOrderMoney',$todayOrderMoney);
         return $this->fetch('index');
     }
 

@@ -5,6 +5,7 @@ namespace app\admin\controller;
 use app\admin\model\UsersModel;
 use app\admin\model\UserMoneyLog;
 use app\admin\model\Apply;
+use app\admin\model\Message;
 
 use think\Db;
 class Member extends Base
@@ -43,6 +44,8 @@ class Member extends Base
                     $selectResult[$key]['fathername'] = '';
                     $selectResult[$key]['fatherphone'] = '';
                 }
+                $selectResult[$key]['is_union'] = $vo['is_union'] == 1 ? "<button class='btn btn-danger'>否</button>" : "<button class='btn btn-primary'>是</button>" ;
+                $selectResult[$key]['headimg'] = "<img src='".$vo->headimg."' width=50px; height=50px;>";
                 $selectResult[$key]['operate'] = showOperate($this->makeButton($vo['id']));
                 $selectResult[$key]['type'] = UsersModel::TYPE[$vo['type']];
                 $selectResult[$key]['created_at'] = date('Y-m-d H:i:s',$vo['created_at']);
@@ -215,10 +218,17 @@ class Member extends Base
         #获取提现金额
         $data['cash'] = abs( $log->getTypeBalance($id,4) );
 
-        #积分 -- 公用消费积分 --> 
+        #消费积分 -- 公用消费积分 --> 
         $all =  Db::table('integral')->where(['uid'=>$id,'type'=>1,'is_add'=>1])->sum('value');
         $all1 =  Db::table('integral')->where(['uid'=>$id,'type'=>1,'is_add'=>2])->sum('value');
+
+        #店铺积分
+        $all2 =  Db::table('integral')->where(['uid'=>$id,'type'=>2,'is_add'=>1])->sum('value');
+        $all3 =  Db::table('integral')->where(['uid'=>$id,'type'=>2,'is_add'=>2])->sum('value');
+
         $data['score'] = sprintf("%.2f",$all-$all1);
+        $data['shop_score'] = sprintf("%.2f",$all2-$all3);
+
 
         return json($data);          
     }
@@ -254,6 +264,64 @@ class Member extends Base
 
     // }
 
+    #发信息
+    public function user_letter()
+    {
+        if (request()->isPost()) {
+            $data = input('param.');
+            $data['content'] = $_POST['content'];
+            $data['created_at'] = time();
+
+            $msg = Db::table('user_message')->insert($data);
+            if ($msg) {
+                return json(['code'=>1,'msg'=>'发送成功','data'=>url('member/message')]);
+            }else{
+                return json(['code'=>-1,'msg'=>'发送失败']);
+            }
+        }
+
+        $user = UsersModel::where('id',input('param.id'))->find();
+        $this->assign('user',$user);
+        return $this->fetch();
+
+    }
+
+    #消息列表
+    public function message()
+    {
+        if(request()->isAjax()){
+
+            $param = input('param.');
+
+            $limit = $param['pageSize'];
+            $offset = ($param['pageNumber'] - 1) * $limit;
+
+            $where = [];
+            if (!empty($param['phone'])) {
+                $user = UsersModel::where('phone','like','%' . trim($param['phone']) . '%')->column('id');
+                $where['uid'] = ['in',$user];
+            }
+
+            $user = new Message();
+            $selectResult = $user->getListByWhere($where, $offset, $limit);
+
+
+            // 拼装参数
+            foreach($selectResult as $key=>$vo){
+                $selectResult[$key]['username'] = $vo->user->nickname;
+                $selectResult[$key]['userphone'] = $vo->user->phone;
+                $selectResult[$key]['created_at'] = date('Y-m-d H:i:s',$vo['created_at']);
+            }
+
+            $return['total'] = $user->getAllCount($where);  //总数据
+            $return['rows'] = $selectResult;
+
+            return json($return);
+        }
+        return $this->fetch();        
+    }
+
+
     /**
      * 拼装操作按钮
      * @param $id
@@ -265,7 +333,7 @@ class Member extends Base
             '编辑' => [
                 'auth' => 'member/useredit',
                 'href' => url('member/userEdit', ['id' => $id]),
-                'btnStyle' => 'primary',
+                'btnStyle' => 'warning',
                 'icon' => 'fa fa-paste'
             ],
             '资金管理' => [
@@ -273,7 +341,13 @@ class Member extends Base
                 'href' => "javascript:user_money(" .$id .")",
                 'btnStyle' => 'primary',
                 'icon' => 'fa fa-paste'
-            ]              
+            ],
+            '发信' => [
+                'auth' => 'member/user_letter',
+                'href' => url('member/user_letter', ['id' => $id]),
+                'btnStyle' => 'primary',
+                'icon' => 'fa fa-paste'
+            ]                          
         ];            
 
     }

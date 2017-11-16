@@ -62,23 +62,23 @@ return [
     ],
     'wechat'                 => [
         # 微信的公众平台的appid
-        'appid'=>'wx916b0685f93052ec',
+        'appid'=>'wx1c1d4b02b28ba4f8',
         # 微信开放平台的的appid
         'open_appid'=>'',
         # 公众号的secret
-        'secret'=>'0aa3c8590cc48d95b47816df11642674',
+        'secret'=>'aa5ce1d241e705d27f45991d3266797c',
         # 开放平台引用秘钥
         'open_secret'=>'',
         # 微信公众号商户平台付key
-        'pay_key'=>'3a479e1f8c4ee6491922ee7016da2bbf',
+        'pay_key'=>'3a479e1f8c4ee6491922ee7016da2bbf',  //未修改
         # 微信开放商户平台key
         'open_pay_key'=>'',
         # 微信公众商户平台商户id
-        'mchid' => '1458359602',
+        'mchid' => '1363960602',
         # 微信开放平台商户id
         'open_mchid' => '',
         #通知回调地址
-        'notify_url'=>'http://rj.runjiaby.com/home/not/wechatNotify',
+        'notify_url'=>'http://admin.oto178.com/home/not/wechatNotify',
     ],
 
 ];
