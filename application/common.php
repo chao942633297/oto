@@ -21,6 +21,23 @@ function qrcode($param,$level=3,$size=4){
 }
 
 /**
+ * 生成二维码
+ * @param int $param 
+ * @param $level 容错等级
+ * @param $size 图片大小
+ * @return 
+ */
+function ShopQrcode($param,$level=3,$size=4){
+    vendor('phpqrcode.phpqrcode');
+    $url = "./uploads/receivables/$param.png";
+    $errorCorrectionLevel =intval($level) ;//容错级别 
+    $matrixPointSize = intval($size);//生成图片大小 
+    //生成二维码图片 
+    $data = "{\"code\":\"oto\",\"data\":\"$param\"}";
+    $object = new \QRcode();
+    $img = $object->png($data,$url, $errorCorrectionLevel, $matrixPointSize, 2,false);
+}
+/**
  * 把数据写入一个文件
  *
  * @param string          $file    文件名
