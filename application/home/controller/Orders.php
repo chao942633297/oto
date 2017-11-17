@@ -191,4 +191,17 @@ class Orders extends Controller
     }
 
 
+
+    public function orderList(Request $request){
+        $status = $request->param('status');
+        $order = Order::all(['uid'=>$this->userId,'status'=>$status]);
+        $return = [];
+        foreach($order as $key=>$val){
+            $return[$key]['order_num'] = $val['pay_order_num'];
+            $return[$key]['status'] = $val['pay_order_num'];
+        }
+    }
+
+
+
 }
