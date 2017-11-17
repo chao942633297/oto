@@ -25,13 +25,28 @@ class Goods extends Controller
         if (empty($type) || !in_array($type, [1, 2, 3])) {
             return json(['msg' => '参数错误', 'code' => 1001]);
         }
+        if($request->has('class')){                          //搜索分类
+            //选择分类,则分类热度加一
+            Db::table('good_class')->where('id',$request->param('class'))->setInc('hot');
+            $where['class'] = $request->param('class');
+        }
+        if($request->has('name')){                          //搜索商品名称
+            $where['name'] = ['like','%'.$request->param('name').'%'];
+        }
         $where['type'] = $type;
+        $where['status'] = 1;
         $goods = Db::table('good')
+            ->field('name,img,price,rebate')
             ->where($where)
             ->limit($page, $list)
             ->order('id', 'desc')
             ->select();
-        return json(['data' => $goods, 'msg' => '查询成功', 'code' => 200]);
+        //分类
+        $class = [];
+        if($type == 2){
+            $class = Db::table('good_class')->order('hot','desc')->select();
+        }
+        return json(['data' => $goods,'class'=>$class, 'msg' => '查询成功', 'code' => 200]);
     }
 
 
@@ -66,6 +81,11 @@ class Goods extends Controller
         $goodparam = Db::table('good')->where('id', $goodId)->value('parameter');
         return json(['data' => $goodparam, 'msg' => '查询成功', 'code' => 200]);
     }
+
+
+
+
+
 
 
 }
