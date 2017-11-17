@@ -69,9 +69,9 @@ class User extends Base
 	public function qrcode()
 	{
 		$user = UsersModel::where('id',$this->userId)->find();
-#		获取当前用户
+		#获取当前用户
 		if (empty($user)) {
-			return jsonp(['status'=>2000,'msg'=>'请登录']);
+			return json(['status'=>2000,'msg'=>'请登录']);
 		}
 		$param = md5($user->phone);
 		qrcode($param);
@@ -89,14 +89,14 @@ class User extends Base
 			# 分配JSapi配置
 			$data['jsapi_config'] = $jsapi_config;
 		}
-		return jsonp(['status'=>200,'msg'=>'成功生成二维码','data'=>$data]);
+		return json(['status'=>200,'msg'=>'成功生成二维码','data'=>$data]);
 	}
 
 	#获取编辑资料信息
 	public function userEditInfo()
 	{
 		$user = UsersModel::where('id',$this->userId)->field('account,nickname,sex,headimg,wechat_qrcode')->find();
-		return jsonp(['status'=>200,'msg'=>'请求成功','data'=>$user]);
+		return json(['status'=>200,'msg'=>'请求成功','data'=>$user]);
 	}
 
 	#编辑用户信息
@@ -145,5 +145,119 @@ class User extends Base
 			return 	json(['status'=>200,'msg'=>'查询成功','data'=>$apply['status']]);
 		}
 	}
+
+	#我的伙伴
+	public function myPartner()
+	{
+		$data  = [];
+		$model = UsersModel::where('pid',$this->userId);
+		$count = $model->count();	//伙伴总人数
+		if (!$count) {
+			$data['count'] = 0;
+			$data['ordinary'] = [];
+			$data['vip'] = [];
+		}else{
+			$ptuser  = $model->where('type',1)->field('headimg,id,nickname,created_at,phone')->select();
+			$vipuser  = $model->where('type',2)->field('headimg,id,nickname,created_at,phone')->select();
+			$data['count'] = $count;
+			$data['ordinary'] = $ptuser;
+			$data['vip'] = $vipuser;
+		}
+
+		return json(['status'=>200,'msg'=>'请求成功','data'=>$data]);
+	}
+
+
+	#用户名片
+	public function userCard()
+	{
+		$id = input('param.id');
+		$user = UsersModel::where('id',$id)->field('headimg,nickname,account,sex,phone,wechat_qrcode')->find();
+		return json(['status'=>200,'msg'=>'请求成功','data'=>$user]);
+	}
+
+	#收款二维码
+	public function receivablesQrcode()
+	{	
+		$this->userId = 9;
+		$user = UsersModel::where('id',$this->userId)->find();
+		#获取当前用户
+		if (empty($user)) {
+			return json(['status'=>2000,'msg'=>'请登录']);
+		}
+		ShopQrcode($user->unique);
+		#取出生成的二维码
+		$data = [];
+		$data['path'] = ADMIN_URL.'/uploads/receivables/'.$user->unique.'.png';
+		return json(['status'=>200,'msg'=>'请求成功','data'=>$data]);
+	}
+
+	#支付积分
+	public function payScoreByShop()
+	{
+		$param = input('param.');
+		$pay_password = UsersModel::where('id',$this->userId)->value('pay_password');
+		// if ( md5($param['pay_password']) != $pay_password ) {
+		// 	return json(['status'=>-1,'msg'=>'支付密码错误']);
+		// }
+		Db::startTrans();
+		#查询扫码用户的可用积分
+		$model = Db::table('integral')->where(['uid'=>$this->userId,'type'=>1]);
+		$scores = $model->where('is_add',1)->sum('value');
+		$score = $model->where('is_add',2)->sum('value');
+		$trueScore = sprintf("%.2f",$scores - $score);	
+
+		if ( abs($param['score']) >$trueScore ) {
+			return json(['status'=>-1,'msg'=>'积分不够']);
+		}
+		$shopUser = UsersModel::where('unique',$param['unique'])->find();
+		if (empty($shopUser)) {
+			return json(['status'=>-1,'msg'=>'信息错误,请重新扫码支付']);
+		}
+		if ($shopUser['is_union'] != 2) {
+			return json(['status'=>-1,'msg'=>'信息错误,请重新扫码支付']);
+		}
+
+		$data = [];		//店家加积分
+		$data['uid'] = $shopUser['id'];
+		$data['value'] = abs($param['score']);
+		$data['is_add'] = 1;
+		$data['message'] = '线下扫码';
+		$data['type'] = 2;//店家积分,可提现
+		$data['source'] = $this->userId;
+		$data['img'] = $param['img'];
+		$data['created_at'] = time();
+
+		$datas= [];		//用户减积分
+		$datas['uid'] =  $this->userId;
+		$datas['value'] = abs($param['score']);
+		$datas['is_add'] = 2;
+		$datas['message'] = '线下消费购物';
+		$datas['type'] = 1;//消费积分
+		$datas['source'] = $this->userId;
+		$datas['created_at'] = time();
+		try {
+			$res = Db::table('integral')->insert($data);
+			$res1 = Db::table('integral')->insert($datas);
+			if ($res && $res1) {
+				Db::commit();
+				return json(['status'=>200,'msg'=>'支付成功']);
+			}
+				return json(['status'=>-1,'msg'=>'支付失败']);
+		} catch (Exception $e) {
+				Db::rollback();
+				return json(['status'=>-1,'msg'=>'支付失败']);
+		}	
+	}
+
+
+
+
+
+
+
+
+
+
 
 }

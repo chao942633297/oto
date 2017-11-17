@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>测试吊起微信扫描</title>
+</head>
+<body>
+  <button id="saoma" style="margin: 50px auto">扫码</button>
+</body>
+<script src="https://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script>
+<script src="/static/admin/js/jquery-3.1.1.min.js"></script>
+<script>
+  // 注意：所有的JS接口只能在公众号绑定的域名下调用，公众号开发者需要先登录微信公众平台进入“公众号设置”的“功能设置”里填写“JS接口安全域名”。
+  // 如果发现在 Android 不能分享自定义内容，请到官网下载最新的包覆盖安装，Android 自定义分享接口需升级至 6.0.2.58 版本及以上。
+  // 完整 JS-SDK 文档地址：<a rel="nofollow" href="http://mp.weixin.qq.com/wiki/7/aaa137b55fb2e0456bf8dd9148dd613f.html" target="_blank">http://mp.weixin.qq.com/wiki/7/aaa137b55fb2e0456bf8dd9148dd613f.html</a>
+  var appId="{$data['appId']}";
+  var timestamp="{$data['timestamp']}";
+  var nonceStr="{$data['nonceStr']}";
+  var signature="{$data['signature']}";
+  wx.config({
+    debug: false,
+    appId: appId,
+    timestamp: timestamp,
+    nonceStr: nonceStr,
+    signature: signature,
+    jsApiList:
+       // 所有要调用的 API 都要加到这个列表中
+       ['scanQRCode']
+      
+  });
+  $('#saoma').click(function(){
+
+    wx.ready(function () {
+        // 在这里调用 API
+      wx.scanQRCode({
+
+          needResult: 1, // 默认为0，扫描结果由微信处理，1则直接返回扫描结果，
+          // ,"barCode"
+          scanType: ["qrCode"], // 可以指定扫二维码还是一维码，默认二者都有
+
+          success: function (res) {
+          var result = res.resultStr; // 当needResult 为 1 时，扫码返回的结果
+          result = JSON.parse(result);
+          if (result.code == "oto") {
+            $.ajax({
+              url:"./scanQrcode",
+              type:"post",
+              data:{data:result.data},
+              xhrFields: {withCredentials: true},
+              crossDomain: true,
+              success:function(res){
+                if (res.code == 1) {
+                  window.location.href="";
+                }else{
+                  alert(res.msg);
+                }
+              }
+            });
+          }else{
+            alert('参数错误');
+          }
+      }
+
+      });
+    });    
+  });
+
+
+</script>
+</html>

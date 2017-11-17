@@ -12,9 +12,9 @@ class Address extends Base
 	#用户ID
 	protected $userId;
 	
-	public function __construct()
+	public function _initialize()
 	{
-		parent::__construct();
+		parent::_initialize();
 		$this->userId = session('uid');
 	}
 

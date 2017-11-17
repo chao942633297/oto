@@ -312,4 +312,38 @@ class Wechat extends Controller
 			return json(['status'=>-1,'msg'=>'短信服务出错']);	
 		}
 	}
+
+
+	#扫码向商家支付积分
+	public function payIntegral()
+	{
+    	$jsapi_config = json_decode(Wechats::get_jsapi_config(['scanQRCode'],false,false),true);
+		$this->assign('data',$jsapi_config);
+		return $this->fetch('payIntegral');
+	}
+
+	#扫码请求成功访问接口
+	public function scanQrcode()
+	{
+		$data = [];
+		$shopUser = UsersModel::where('unique',input('param.data'))->find();
+		if (empty($shopUser)) {
+			return json(['status'=>-1,'msg'=>'店家不存在']);
+		}
+		if ($shopUser['is_union'] != 2) {
+			return json(['status'=>-1,'msg'=>'此用户还不是联盟商家']);
+		}
+		#组合联盟商家的信息
+		$data['shopUserNickname'] = $shopUser['nickname'];
+		$data['shopUserHeadimg'] = $shopUser['headimg'];
+		$data['shopUserUnique'] = $shopUser['unique'];
+		#查询扫码用户的可用积分
+		$model = Db::table('integral')->where(['uid'=>$this->userId,'type'=>1]);
+		$scores = $model->where('is_add',1)->sum('value');
+		$score = $model->where('is_add',2)->sum('value');
+		$trueScore = sprintf("%.2f",$scores - $score);
+		$data['score'] = $trueScore ? :0;
+
+		return json(['status'=>200,'msg'=>'请求成功','data'=>$data]);
+	}
 }
