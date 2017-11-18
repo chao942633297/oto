@@ -73,9 +73,9 @@ class Orders extends Controller
         }
         //TODO:充值卡余额 /用户积分
         $money = 0;
-        if($type == 1){
+        if ($type == 1) {
             $money = Db::table('users')->where('id', $this->userId)->value('recharge_card');
-        }else if($type == 2){
+        } else if ($type == 2) {
             $money = Db::table('users')->where('id', $this->userId)->value('score');
         }
 
@@ -142,6 +142,7 @@ class Orders extends Controller
         $goodNum = explode(',', rtrim($strNum, ','));
         $shop = [];
         $totalPrice = 0;
+        $totalNum = 0;
         foreach ($goodId as $key => $val) {
             $good = Db::table('good')->where('id', $val)->find();
             $shop[$key]['name'] = $good['name'];
@@ -151,12 +152,14 @@ class Orders extends Controller
             if ($shop[$key]['num'] <= 0) {
                 return 'error_num';
             }
+            $totalNum += (int)$goodNum[$key];
             $totalPrice += $good['price'] * (int)$goodNum[$key];
         }
         $order = [];
         $order['pay_order_num'] = order_sn();
         $order['uid'] = $this->userId;
         $order['price'] = $totalPrice;
+        $order['total_num'] = $totalNum;
         $order['message'] = $msg;
         $order['type'] = $type;
         $order['status'] = 1;
@@ -191,17 +194,84 @@ class Orders extends Controller
     }
 
 
-
-    public function orderList(Request $request){
+    /**
+     * @param Request $request
+     * @return \think\response\Json
+     * 订单列表
+     * 1代付款 2 待收货 3 代发货 4已完成
+     */
+    public function orderList(Request $request)
+    {
         $status = $request->param('status');
-        $order = Order::all(['uid'=>$this->userId,'status'=>$status]);
+        $order = Order::all(['uid' => $this->userId, 'status' => $status]);
         $return = [];
-        foreach($order as $key=>$val){
+        foreach ($order as $key => $val) {
             $return[$key]['order_num'] = $val['pay_order_num'];
-            $return[$key]['status'] = $val['pay_order_num'];
+            $return[$key]['status'] = Order::STATUS[$val['status']];
+            $return[$key]['good'] = $val['orderDetail'];
+            $return[$key]['totalNum'] = $val['total_num'];
+            $return[$key]['totalPrice'] = $val['price'];
         }
+        return json(['data' => $return, 'msg' => '查询成功', 'code' => 200]);
     }
 
+
+    /**
+     * @param Request $request
+     * @return \think\response\Json
+     * 订单详情
+     *传入订单id
+     */
+    public function orderDetail(Request $request)
+    {
+        $orderId = $request->param('orderId');
+        $order = Order::get($orderId);
+        $return = [];
+        $return['id'] = $order['id'];
+        $return['order_num'] = $order['pay_order_num'];
+        $return['status'] = Order::STATUS[$order['status']];
+        $return['address'] = $order['orderInfo'];
+        $return['good'] = $order['orderDetail'];
+        $return['price'] = $order['price'];
+        $return['cour_code'] = $order['cour_code'];
+        return json(['data' => $return, 'msg' => '查询成功', 'code' => 200]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return \think\response\Json
+     * @throws Exception
+     * 取消订单
+     * 传入订单id
+     */
+    public function cancelOrder(Request $request)
+    {
+        $orderId = $request->param('orderId');
+        $res = Db::table('order')->where('id', $orderId)->delete();
+        if ($res) {
+            return json(['msg' => '取消订单成功', 'code' => 200]);
+        }
+        return json(['msg' => '取消订单失败', 'code' => 1001]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return \think\response\Json
+     * @throws Exception
+     * 确认收货
+     * 传入订单id
+     */
+    public function sureGet(Request $request)
+    {
+        $orderId = $request->param('orderId');
+        $res = Db::table('order')->where('id', $orderId)->update(['status' => 4]);
+        if ($res) {
+            return json(['msg' => '确认收货成功', 'code' => 200]);
+        }
+        return json(['msg' => '确认收货失败', 'code' => 1001]);
+    }
 
 
 }
