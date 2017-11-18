@@ -10,6 +10,8 @@ use wechatH5\JsApi_pub;
 use wechatH5\UnifiedOrder_pub;
 use wechatH5\WxPayConf_pub;
 
+vendor('wechatH5.WxMainMethod');
+vendor('wechatH5.WxPayConf_pub');
 class Wxpay extends Controller
 {
 
@@ -44,11 +46,11 @@ class Wxpay extends Controller
         $out_trade_no = $orderData['pay_order_num'];
         $total_fee = $orderData['price'];
         #TODO 测试金额
-        $total_fee = 100;
+        $total_fee = 1;
 
         $unifiedOrder = new UnifiedOrder_pub();
         $unifiedOrder->setParameter("openid", "$openid");//商品描述
-        $unifiedOrder->setParameter("body", "美尔丹");//商品描述
+        $unifiedOrder->setParameter("body", "欧凸欧");//商品描述
         $unifiedOrder->setParameter("out_trade_no", "$out_trade_no");//商户订单号
         $unifiedOrder->setParameter("total_fee", $total_fee);//总金额
         $unifiedOrder->setParameter("notify_url", WxPayConf_pub::NOTIFY_URL);//通知地址
@@ -61,8 +63,9 @@ class Wxpay extends Controller
         $jsApiParameters = $jsApi->getParameters();
         $this->assign('jsApiParameters', $jsApiParameters);
 
-        return view('wechat/index');
+        return view('wechat/wxchatpay');
     }
+
 
 
 }
