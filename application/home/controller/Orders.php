@@ -171,9 +171,16 @@ class Orders extends Controller
         try {
             $res = Order::create($order);   //保存订单
             if ($res) {
+                $good = [];
                 foreach ($goodId as $key => $val) {
                     $shop[$key]['order_id'] = $res['id'];
+                    //扣除商品库存
+                    $good[] = [
+                        'id'    => $val,
+                        'num'   => ['exp','num - 1'],
+                    ];
                 }
+                Db::table('good')->update($good);
                 $detail = Db::table('order_detail')
                     ->insertAll($shop);             //保存订单详情
                 $addrData = Db::table('address')
