@@ -79,7 +79,6 @@ class Orders extends Controller
             $money = Db::table('users')->where('id', $this->userId)->value('score');
         }
 
-
         return json(['data' => ['addr' => $return, 'shop' => $shop,], 'totalPrice' => $totalPrice, 'money' => $money, 'type' => $type, 'msg' => '查询成功', 'code' => 200]);
     }
 
@@ -92,47 +91,75 @@ class Orders extends Controller
         $input = $request->post();
         $msg = htmlspecialchars($input['msg']);
         $payment = $request->param('payment');
-        if (!in_array($payment, [1, 2, 3])) {
+        if (!in_array($payment, [1, 2, 3, 4, 5])) {
             return json(['msg' => '支付方式错误', 'code' => 1001]);
         }
-        $type = $request->param('type');           //订单类型
+        $type = $request->param('type');           //订单类型 1 普通订单 2 排位订单
         if (empty($input['goodId']) || empty($input['goodNum'])) {
             return json(['msg' => '参数错误', 'code' => 1001]);
         }
         $result = $this->saveOrder($input['goodId'], $input['goodNum'], $msg, $type, $payment, $input['addrId']);
         if ($result) {
-            switch ($payment) {
+            session('home_good_id', '');
+            session('home_good_num', '');
+            switch ($payment) {                   //1=>'支付宝',2=>'微信',3=>'粮票',4=>'充值卡',5=>'积分'
                 case 1 :
-                    //充值卡支付
-                    $user = Db::table('users')->find($this->userId);
-                    if (md5($input['password'] !== $user['pay_password'])) {
-                        return json(['msg' => '支付密码不正确', 'code' => 1002]);
-                    }
-                    if ($result['price'] > $user['recharge_card']) {
-                        return json(['msg' => '充值卡余额不足', 'code' => 1002]);
-                    }
-                    if ($result == 'error_num') {
-                        return json(['msg' => '商品数量错误', 'code' => 1002]);
-                    }
-                    //减少用户充值卡金额
-                    $res = Db::table('users')->where('id', $user['id'])->setDec('recharge_card', $result['price']);
+                    //支付宝支付
+                    break;
+                case 2 :
+                    //微信支付
+                    break;
+                case 3 :
+                    //粮票支付
+                    $res = $this->payGoods($input['password'], 'balance', '粮票不足', $input['price'], $result);
                     if ($res) {
                         return json(['msg' => '购买成功', 'code' => 200]);
                     }
+                    return json(['msg' => '购买失败', 'code' => 1001]);
                     break;
-                case 2 :
-                    //支付宝支付
+                case 4 :
+                    //充值卡支付
+                    $res = $this->payGoods($input['password'], 'recharge_card', '充值卡金额不足', $input['price'], $result);
+                    if ($res) {
+                        return json(['msg' => '购买成功', 'code' => 200]);
+                    }
+                    return json(['msg' => '购买失败', 'code' => 1001]);
                     break;
-                case 3 :
-                    //微信支付
+                case 5 :
+                    //积分支付
+                    $res = $this->payGoods($input['password'], 'score', '积分不足', $input['price'], $result);
+                    if ($res) {
+                        return json(['msg' => '购买成功', 'code' => 200]);
+                    }
+                    return json(['msg' => '购买失败', 'code' => 1001]);
                     break;
             }
         }
 
     }
 
-
-
+    /**
+     * 购买商品方式
+     * 粮票支付
+     * 充值卡支付
+     * 积分支付
+     */
+    public function payGoods($password, $payment, $remark, $price, $result)
+    {
+        $user = Db::table('users')->find($this->userId);
+        if (md5($password) !== $user['pay_password']) {
+            return json(['msg' => '支付密码不正确', 'code' => 1002]);
+        }
+        if ($price > $user[$payment]) {
+            return json(['msg' => $remark, 'code' => 1002]);
+        }
+        if ($result == 'error_num') {
+            return json(['msg' => '商品数量错误', 'code' => 1002]);
+        }
+        //减少用户充值卡金额
+        $res = Db::table('users')->where('id', $user['id'])->setDec($payment, $result['price']);
+        return $res;
+    }
 
 
     /**
@@ -176,8 +203,8 @@ class Orders extends Controller
                     $shop[$key]['order_id'] = $res['id'];
                     //扣除商品库存
                     $good[] = [
-                        'id'    => $val,
-                        'num'   => ['exp','num - 1'],
+                        'id' => $val,
+                        'num' => ['exp', 'num - 1'],
                     ];
                 }
                 Db::table('good')->update($good);
@@ -281,6 +308,24 @@ class Orders extends Controller
         }
         return json(['msg' => '确认收货失败', 'code' => 1001]);
     }
+
+
+    /**
+     * 用户成为合伙人
+     * 冻结金额转化余额
+     */
+    public function frozenChange(){
+        $user = Db::table('users')->where('id',$this->userId)->find();
+        if($user['type'] == 2 && $user['type_time'] <= date('Y-m-d H:i:s',time() - 86400)){
+            if($user['frozen_price'] > 0){
+                $user['balance'] += $user['frozen_price'];
+                $user['frozen_price'] = 0;
+                $user->save();
+            }
+        }
+    }
+
+
 
 
 }

@@ -44,13 +44,21 @@ class Notify extends Controller{
             $out_trade_no = $returnData['out_trade_no'];   //订单号
             $order = Db::table('order')->where('pay_order_num',$out_trade_no)->find();
             $total_fee = $returnData['total_fee'] / 100;    //实付金额
+         /*   if($total_fee != $order['price']){
+                file_put_contents('错误信息.txt','订单id:'.$order['id'].'支付金额:'.$total_fee."\n",FILE_APPEND);
+                echo 'success';
+            }*/
             if ($order['status'] == 1) {
                 Db::startTrans();
                 try{
                     //对上级返佣
                     $this->rebate($order['uid'],$total_fee);
-                    //进入排位
-                    $this->goQualifying($order['uid']);
+                    //对上级产生团队业绩
+                    $this->getTeamBouns($order['uid'],$total_fee);
+                    if($order['type'] == 2){                    //排位订单
+                        //进入排位
+                        $this->goQualifying($order['uid']);
+                    }
                     //修改订单状态
                     Db::table('order')->where('id',$order['id'])->update(['status'=>2]);
                     Db::commit();
@@ -59,7 +67,6 @@ class Notify extends Controller{
                     Db::rollback();
                     echo 'fail';
                 }
-
             }
         }
     }
@@ -104,11 +111,14 @@ class Notify extends Controller{
      * @throws Exception
      * 进入排位
      * 判断上面人是否出局
+     * 用户级别升级为合伙人
      */
     public function goQualifying($userId){
         Db::startTrans();
         try{
             $lastId = Db::table('row')->insertGetId(['user_id'=>$userId,'created_at'=>date('YmdHis')]);
+            //修改用户级别
+            Db::table('users')->where('id',$userId)->update(['type'=>2,'type_time'=>date('YmdHis')]);
             $starId = ($lastId - $this->row_enter);
             $endId = $starId + $this->row_leave;
             $level = Db::table('row')->where(['status'=>0])->whereBetween('id',[$starId,$endId])->select();
