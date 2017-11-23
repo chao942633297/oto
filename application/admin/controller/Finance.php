@@ -98,8 +98,8 @@ class Finance extends Base
             // 拼装参数
             foreach($selectResult as $key=>$vo){
 
-            	$selectResult[$key]['username'] = $vo->user['nickname'];
-            	$selectResult[$key]['userphone'] = $vo->user['phone'];
+            	$selectResult[$key]['username'] = $vo->user->nickname;
+            	$selectResult[$key]['userphone'] = $vo->user->phone;
                 $selectResult[$key]['type'] = $vo['type'] ? Integral::TYPE[$vo['type']] :'';
                 $selectResult[$key]['value'] = $vo['is_add'] == 1 ? $vo['value']  : - $vo['value'];
                 $selectResult[$key]['source'] = $vo['source'] ? Integral::SOURCE[$vo['source']] :'';

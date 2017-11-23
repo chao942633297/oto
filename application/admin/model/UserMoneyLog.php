@@ -12,7 +12,7 @@ class UserMoneyLog extends Base
     const STATUS = [1=>'正常',2=>'冻结'];
 
     #金额类别
-    const TYPE = [1=>'分享奖',2=>'感恩奖',3=>'共享奖',4=>'分销佣金',5=>'购买商品',6=>'粮票提现'];
+    const TYPE = [1=>'分享奖',2=>'感恩奖',3=>'共享奖',5=>'购买商品',6=>'粮票提现',7=>'登录红包',8=>'分享红包',9=>'购物红包'];
     
 
     #关联users表
@@ -20,8 +20,11 @@ class UserMoneyLog extends Base
     {
         return $this->belongsTo('UsersModel','uid','id');
     }
-
-
+    #关联users表
+    public function sources()
+    {
+        return $this->belongsTo('UsersModel','source','id');
+    }
     #获取会员粮票
     public static function getBalance($id,$status=1)
     {
@@ -34,5 +37,11 @@ class UserMoneyLog extends Base
     public static function getTypeBalance($id,$type)
     {
         return sprintf("%.2f",self::where(['uid'=>$id,'type'=>$type,'is_add'=>1])->sum('money'));
+    }   
+
+    #获取类型余额记录
+    public static function getTypeBalanceList($id,$type)
+    {
+        return self::where(['uid'=>$id,'type'=>$type,'is_add'=>1])->select();
     }    
 }

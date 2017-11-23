@@ -291,3 +291,47 @@ function shopDistance($userlng,$userlat,$lng,$lat)
     $distance=$json_data->result[0]->distance->value; 
     return $distance;
 }
+
+
+/*================================新增=======================================*/
+
+//获取用户上级
+function getUpUser($arr,$prentId){
+    $totalNum = [];
+    while($prentId !== 0){
+        foreach($arr as $key=>$val){
+            if($val['user_id'] == $prentId){
+                array_push($totalNum,$val['user_id']);
+                $prentId = $val['cid'];
+                break;
+            }
+        }
+    }
+    return $totalNum;
+}
+
+
+//获取所有下级
+function getSubtree($arr,$parent=0){
+    $task = array($parent);//创建任务表
+    $subs = array();//存子孙栏目的数组
+    while(!empty($task))//如果任务表不为空 就表示要做任务
+    {
+        $flag = false;//默认没找到子树
+        foreach($arr as $k=>$v){
+            if($v->pid == $parent){
+                $subs [] = $v->id;
+                array_push($task,$v->id);//借助栈 把新的地区的id压入栈
+                $parent = $v->id;
+                unset($arr[$k]);//把找到的单元unset掉
+                $flag = true;
+            }
+        }
+        if(!$flag){//表示没找到子树
+            array_pop($task);
+            $parent = end($task);
+        }
+    }
+    return $subs;
+}
+

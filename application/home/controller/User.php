@@ -19,6 +19,14 @@ class User extends Base
 
 	}
 
+	#根据unique获取用户信息
+	public function getUserPhoneByUnique()
+	{
+		$user = UsersModel::where('id',input('param.unique'))->value('phone');
+		return json(['status'=>200,'msg'=>'ok','data'=>$user]);
+	}
+
+
 	#根据id获取用户信息
 	public function getUserInfoById()
 	{
@@ -73,7 +81,8 @@ class User extends Base
 		if (empty($user)) {
 			return json(['status'=>2000,'msg'=>'请登录']);
 		}
-		$param = md5($user->phone);
+		// $param = md5($user->phone);
+		$param = $user->unique;
 		qrcode($param);
 		#取出生成的二维码
 		$data = [];
@@ -83,7 +92,7 @@ class User extends Base
 		$data['unique'] = $param;
 		if (IS_WECHAT) {
 			#设置session shareUrl
-			session('shareUrl','http://www.oto178.com/code.html?unique='.$param);
+			session('shareUrl',WEB_URL.'/code.html?unique='.$param);
 			# 获取jsapi
 			$jsapi_config = Wechats::get_jsapi_config(['onMenuShareTimeline','onMenuShareAppMessage'],false,false);
 			# 分配JSapi配置
@@ -150,15 +159,14 @@ class User extends Base
 	public function myPartner()
 	{
 		$data  = [];
-		$model = UsersModel::where('pid',$this->userId);
-		$count = $model->count();	//伙伴总人数
+		$count = UsersModel::where('pid',$this->userId)->count();	//伙伴总人数
 		if (!$count) {
 			$data['count'] = 0;
 			$data['ordinary'] = [];
 			$data['vip'] = [];
 		}else{
-			$ptuser  = $model->where('type',1)->field('headimg,id,nickname,created_at,phone')->select();
-			$vipuser  = $model->where('type',2)->field('headimg,id,nickname,created_at,phone')->select();
+			$ptuser  = UsersModel::where('pid',$this->userId)->where('type',1)->field('headimg,id,nickname,created_at,phone')->select();
+			$vipuser  = UsersModel::where('pid',$this->userId)->where('type',2)->field('headimg,id,nickname,created_at,phone')->select();
 			$data['count'] = $count;
 			$data['ordinary'] = $ptuser;
 			$data['vip'] = $vipuser;
@@ -176,10 +184,9 @@ class User extends Base
 		return json(['status'=>200,'msg'=>'请求成功','data'=>$user]);
 	}
 
-	#收款二维码
+	#店铺收款二维码
 	public function receivablesQrcode()
 	{	
-		$this->userId = 9;
 		$user = UsersModel::where('id',$this->userId)->find();
 		#获取当前用户
 		if (empty($user)) {
@@ -196,15 +203,18 @@ class User extends Base
 	public function payScoreByShop()
 	{
 		$param = input('param.');
+
+		if (empty($param)) {
+			return json(['status'=>-1,'msg'=>'请传参数']);
+		}
 		$pay_password = UsersModel::where('id',$this->userId)->value('pay_password');
 		// if ( md5($param['pay_password']) != $pay_password ) {
 		// 	return json(['status'=>-1,'msg'=>'支付密码错误']);
 		// }
 		Db::startTrans();
 		#查询扫码用户的可用积分
-		$model = Db::table('integral')->where(['uid'=>$this->userId,'type'=>1]);
-		$scores = $model->where('is_add',1)->sum('value');
-		$score = $model->where('is_add',2)->sum('value');
+		$scores = Db::table('integral')->where(['uid'=>$this->userId,'type'=>1])->where('is_add',1)->sum('value');
+		$score = Db::table('integral')->where(['uid'=>$this->userId,'type'=>1])->where('is_add',2)->sum('value');
 		$trueScore = sprintf("%.2f",$scores - $score);	
 
 		if ( abs($param['score']) >$trueScore ) {
@@ -249,12 +259,6 @@ class User extends Base
 				return json(['status'=>-1,'msg'=>'支付失败']);
 		}	
 	}
-
-
-
-
-
-
 
 
 

@@ -45,7 +45,6 @@ class Order extends Controller
 
             // 拼装参数
             foreach($selectResult as $key=>$vo){
-
             	$selectResult[$key]['username'] = $vo->user['nickname'];
             	$selectResult[$key]['userphone'] = $vo->user['phone'];
                 $selectResult[$key]['person'] = $vo->orderInfo['name'];
@@ -53,6 +52,8 @@ class Order extends Controller
                 $selectResult[$key]['operate'] = showOperate($this->makeButton($vo['id'], $vo['status']));
                 #订单状态
                 $selectResult[$key]['status'] = $vo['status'] ? Orders::STATUS[$vo['status']] :'无状态';
+                #订单类型
+                $selectResult[$key]['type'] = $vo['type'] ? Orders::TYPE[$vo['type']] :'无类型';
                 #订单支付方式
                 $selectResult[$key]['payment'] = $vo['payment'] ? Orders::PAYMENT[$vo['payment']] :'';
                 #订单创建时间
@@ -67,6 +68,7 @@ class Order extends Controller
 
 		$this->assign('status',Orders::STATUS);   //订单状态
 		$this->assign('payment',Orders::PAYMENT); //支付类型
+        $this->assign('type',Orders::TYPE); //订单类型
 		return $this->fetch();
 	}
 

@@ -1,6 +1,7 @@
 <?php
 namespace app\home\controller;
 
+use app\home\model\Base;
 use think\Controller;
 use app\admin\model\UsersModel;
 use app\home\model\PhoneCode;
@@ -191,9 +192,8 @@ class Wechat extends Controller
 	        	$url .= '&unique=';
 	        	header("location:$url");
         	}else{
+    			Base::redMoney($res['id'],7);	//发红包
 				session('uid',$res['id']);
-				session('phone',$res['phone']);
-				session('unique',$res['unique']);
         		#微信授权登陆
         		header("location:WEB_URL");
         	}
@@ -318,29 +318,34 @@ class Wechat extends Controller
 	public function payIntegral()
 	{
     	$jsapi_config = json_decode(Wechats::get_jsapi_config(['scanQRCode'],false,false),true);
-		$this->assign('data',$jsapi_config);
-		return $this->fetch('payIntegral');
+    	return json(['status'=>200,'msg'=>'获取jsapi','data'=>$jsapi_config]);
+		// $this->assign('data',$jsapi_config);
+		// return $this->fetch('payIntegral');
 	}
 
 	#扫码请求成功访问接口
 	public function scanQrcode()
 	{
+		#自己的id
+		$own = session('uid');
 		$data = [];
-		$shopUser = UsersModel::where('unique',input('param.data'))->find();
+		$shopUser = UsersModel::where('unique',input('param.unique'))->find();
 		if (empty($shopUser)) {
 			return json(['status'=>-1,'msg'=>'店家不存在']);
 		}
 		if ($shopUser['is_union'] != 2) {
 			return json(['status'=>-1,'msg'=>'此用户还不是联盟商家']);
 		}
+		if ($shopUser['id'] == $own) {
+			return json(['status'=>-1,'msg'=>'不能再自己的联盟店消费']);
+		}
 		#组合联盟商家的信息
 		$data['shopUserNickname'] = $shopUser['nickname'];
 		$data['shopUserHeadimg'] = $shopUser['headimg'];
 		$data['shopUserUnique'] = $shopUser['unique'];
 		#查询扫码用户的可用积分
-		$model = Db::table('integral')->where(['uid'=>$this->userId,'type'=>1]);
-		$scores = $model->where('is_add',1)->sum('value');
-		$score = $model->where('is_add',2)->sum('value');
+		$scores = Db::table('integral')->where(['uid'=>$own,'type'=>1])->where('is_add',1)->sum('value');
+		$score = Db::table('integral')->where(['uid'=>$own,'type'=>1])->where('is_add',2)->sum('value');
 		$trueScore = sprintf("%.2f",$scores - $score);
 		$data['score'] = $trueScore ? :0;
 

@@ -1,0 +1,217 @@
+{include file='public/header' /}
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- Panel Other -->
+    <div class="ibox float-e-margins">
+        <div class="ibox-title">
+            <h5>充值卡列表</h5>
+        </div>
+        <div class="ibox-content">
+            <div class="form-group clearfix col-sm-1">
+                <form id='commentForm1' role="form" method="post" class="form-inline pull-right" action="./add">
+                    <button class="btn btn-outline btn-primary" type="submit">生成充值卡</button>
+                </form>
+            </div>
+            <!--搜索框开始-->
+            <form id='commentForm' role="form" method="post" class="form-inline pull-right">
+                <div class="content clearfix m-b">
+                    <div class="form-group">
+                        <label>充值卡卡号：</label>
+                        <input type="text" class="form-control" id="order_num" name="order_num">
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" type="button" style="margin-top:5px" id="search"><strong>搜 索</strong>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <!--搜索框结束-->
+            <div class="example-wrap">
+                <div class="example">
+                    <table id="cusTable">
+                        <thead>
+                        <th data-field="id">充值卡ID</th>
+                        <th data-field="card_number">充值卡卡号</th>
+                        <th data-field="card_password">充值卡密码</th>
+                        <th data-field="value">充值卡额度</th>
+                        <th data-field="user_name">使用者名称</th>
+                        <th data-field="user_phone">使用者手机号</th>
+                        <th data-field="use_time">使用时间</th>
+                        <th data-field="status">状态</th>
+                        <th data-field="created_at">生成时间</th>
+                        <th data-field="operate">操作</th>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <!-- End Example Pagination -->
+        </div>
+    </div>
+</div>
+<div class='table table-bordered' style="display: none;" id="wait">
+    <form method="post" style="margin-top: 15px;" id="myform">
+       <div class="form-group">
+            <label class="control-label col-sm-4" style="height: 34px;line-height: 34px">卡号：</label>
+            <div class="input-group col-sm-6">
+
+                <input id="card_number" type="text" data-id="" class="form-control" name="card_number" required=""
+                       aria-required="true" value="" readonly >
+            </div>
+        </div> 
+        <div class="form-group">
+            <label class="control-label col-sm-4" style="height: 34px;line-height: 34px">金额：</label>
+            <div class="input-group col-sm-6">
+
+                <input id="value" type="number" data-id="" class="form-control" name="value" required=""
+                       aria-required="true" value="" >
+            </div>
+        </div>                     
+        <div class="form-group" >
+            <div class="col-sm-10 col-sm-offset-2">
+                <button class="btn btn-primary " type="button" style="float: right;margin:15px auto" id="biaoshi">提交</button>
+            </div>
+        </div>
+    </form>
+</div>
+<!-- End Panel Other -->
+</div>
+{include file='public/footer' /}
+<script type="text/javascript">
+    function initTable() {
+        //先销毁表格
+        $('#cusTable').bootstrapTable('destroy');
+        //初始化表格,动态从服务器加载数据
+        $("#cusTable").bootstrapTable({
+            method: "get",  //使用get请求到服务器获取数据
+            url: "./index", //获取数据的地址
+            striped: true,  //表格显示条纹
+            pagination: true, //启动分页
+            pageSize: 10,  //每页显示的记录数
+            pageNumber:1, //当前第几页
+            pageList: [5, 10, 15, 20, 25],  //记录数可选列表
+            sidePagination: "server", //表示服务端请求
+            paginationFirstText: "首页",
+            paginationPreText: "上一页",
+            paginationNextText: "下一页",
+            paginationLastText: "尾页",
+            queryParamsType : "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    order_num:$('#order_num').val()
+                };
+                return param;
+            },
+            onLoadSuccess: function(res){  //加载成功时执行
+                if(111 == res.code){
+                    window.location.reload();
+                }
+                layer.msg("加载成功", {time : 1000});
+            },
+            onLoadError: function(){  //加载失败时执行
+                layer.msg("加载数据失败");
+            }
+        });
+    }
+
+    var index = '';
+    function showStart(){
+        index = layer.load(0, {shade: false});
+        return true;
+    }
+
+    function showSuccess(res){
+ 
+        layer.ready(function(){
+            layer.close(index);
+            if(1 == res.code){
+               layer.alert(res.msg, {title: '友情提示', icon: 1, closeBtn: 0}, function(){
+                   window.location.reload();
+               });
+            }else if(111 == res.code){
+                window.location.reload();
+            }else{
+                layer.msg(res.msg, {anim: 6});
+            }
+        });
+    }
+    $(document).ready(function () {
+        //调用函数，初始化表格
+        initTable();
+
+        //当点击查询按钮的时候执行
+        $("#search").bind("click", initTable);
+        // 添加管理员
+        var options = {
+            beforeSubmit:showStart,
+            success:showSuccess
+        };
+
+        $('#commentForm1').submit(function(){
+            $(this).ajaxSubmit(options);
+            return false;
+        });
+    });
+
+    //出售
+    function sell(id){
+        $.ajax({
+            url:"./sell",
+            data:{id:id},
+            type:"post",
+            success:function(res){
+                showSuccess(res);
+            }
+        });
+    }
+
+    function set_value(id){
+
+       $.getJSON("./set_value", {'id' : id,type:1}, function(res){
+            $('#card_number').val(res);
+        layer.open({
+            type: 1,
+            area:'500px',
+            title:'设置充值卡金额',
+            skin: 'layui-layer-demo', //加上边框
+            content: $('#wait')
+        });
+        }) 
+
+    }
+   $('#biaoshi').on('click',function(){
+        layer.closeAll();
+        var value = $('#value').val();
+        var card_number = $('#card_number').val();
+        $.ajax({
+            type: "POST",
+            url: "./set_value",
+            data: {value:value,card_number:card_number,type:2},
+            dataType: "json",
+            success: function(res){
+                if (res.status == 1) {
+                    layer.alert(res.msg, {title: '友情提示', icon: 1, closeBtn: 0}, function(){
+                        window.location.href = res.data;
+                    });
+                }else{
+                    layer.alert(res.msg, {title: '友情提示', icon: 1, closeBtn: 0}, function(){
+                        
+                    });
+                }
+                
+            }
+        });
+   });
+
+    //切换明文密文
+   function switchs(id)
+   {
+    var option = $('#card_password'+id).attr("type");
+    if (option == "text") {
+        $('#card_password'+id).attr("type","password");
+    }else{
+        $('#card_password'+id).attr("type","text");
+    }
+   }
+</script>

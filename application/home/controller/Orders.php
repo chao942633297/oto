@@ -142,6 +142,7 @@ class Orders extends Controller
         $goodNum = explode(',', rtrim($strNum, ','));
         $shop = [];
         $totalPrice = 0;
+        $totalNum = 0;
         foreach ($goodId as $key => $val) {
             $good = Db::table('good')->where('id', $val)->find();
             $shop[$key]['name'] = $good['name'];
@@ -151,12 +152,14 @@ class Orders extends Controller
             if ($shop[$key]['num'] <= 0) {
                 return 'error_num';
             }
+            $totalNum += (int)$goodNum[$key];
             $totalPrice += $good['price'] * (int)$goodNum[$key];
         }
         $order = [];
         $order['pay_order_num'] = order_sn();
         $order['uid'] = $this->userId;
         $order['price'] = $totalPrice;
+        $order['total_num'] = $totalNum;
         $order['message'] = $msg;
         $order['type'] = $type;
         $order['status'] = 1;
@@ -189,6 +192,23 @@ class Orders extends Controller
         }
 
     }
+
+
+
+    public function orderList(Request $request){
+        $status = $request->param('status');
+        $order = Order::all(['uid'=>$this->userId,'status'=>$status]);
+        $return = [];
+        foreach($order as $key=>$val){
+            $return[$key]['order_num'] = $val['pay_order_num'];
+            $return[$key]['status'] = Order::STATUS[$val['status']];
+            $return[$key]['good'] = $val['orderDetail'];
+            $return[$key]['totalNum'] = $val['total_num'];
+            $return[$key]['totalPrice'] = $val['price'];
+        }
+        dump($return[0]['good']);
+    }
+
 
 
 }

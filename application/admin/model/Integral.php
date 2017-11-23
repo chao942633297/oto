@@ -19,5 +19,19 @@ class Integral extends Base
     {
         return $this->belongsTo('UsersModel','uid','id');
     }
+
+    #获取会员类型积分
+    public static function getTypeBalance($id,$type=1)
+    {
+        $add = self::where(['uid'=>$id,'is_add'=>1,'type'=>$type])->sum('value');
+        $reduce = self::where(['uid'=>$id,'is_add'=>2,'type'=>$type])->sum('value');
+        return sprintf("%.2f",$add - $reduce);
+    }
+
+    #获取类型积分记录
+    public static function getTypeBalanceList($id,$type,$is)
+    {
+        return self::where(['uid'=>$id,'type'=>$type,'is_add'=>$is])->select();
+    }    
  
 }
