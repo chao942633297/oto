@@ -14,18 +14,18 @@
         WeixinJSBridge.invoke(
                 'getBrandWCPayRequest',
                 {$jsApiParameters},
-    function(res){
-        WeixinJSBridge.log(res.err_msg);
-        var result = res.err_msg;
-        if(result == 'get_brand_wcpay_request:ok'){
-        var url = "http://xtwhjy.com/xt/wy_my_parent.html";
-        window.location.href = url;
-    }else{
-        alert('你已经点击了取消支付');
-//        window.location.href = 'http://xbj.xinbangjun.com/home/shop/orderShow';
-    }
-    }
-    );
+                function(res){
+                    WeixinJSBridge.log(res.err_msg);
+                    var result = res.err_msg;
+//                     alert(JSON.stringify(res));
+                    if(result == 'get_brand_wcpay_request:ok'){
+                        alert('支付成功,跳转页面');
+                    }else{
+                        alert('你已经点击了取消支付');
+                    }
+                    window.location.href = url;
+                }
+        );
     }
 
     if (typeof WeixinJSBridge == "undefined"){

@@ -73,12 +73,11 @@ class Orders extends Controller
         }
         //TODO:充值卡余额 /用户积分
         $money = 0;
-        if($type == 1){
+        if ($type == 1) {
             $money = Db::table('users')->where('id', $this->userId)->value('recharge_card');
-        }else if($type == 2){
+        } else if ($type == 2) {
             $money = Db::table('users')->where('id', $this->userId)->value('score');
         }
-
 
         return json(['data' => ['addr' => $return, 'shop' => $shop,], 'totalPrice' => $totalPrice, 'money' => $money, 'type' => $type, 'msg' => '查询成功', 'code' => 200]);
     }
@@ -92,44 +91,74 @@ class Orders extends Controller
         $input = $request->post();
         $msg = htmlspecialchars($input['msg']);
         $payment = $request->param('payment');
-        if (!in_array($payment, [1, 2, 3])) {
+        if (!in_array($payment, [1, 2, 3, 4, 5])) {
             return json(['msg' => '支付方式错误', 'code' => 1001]);
         }
-        $type = $request->param('type');           //订单类型
+        $type = $request->param('type');           //订单类型 1 普通订单 2 排位订单
         if (empty($input['goodId']) || empty($input['goodNum'])) {
             return json(['msg' => '参数错误', 'code' => 1001]);
         }
         $result = $this->saveOrder($input['goodId'], $input['goodNum'], $msg, $type, $payment, $input['addrId']);
         if ($result) {
-            switch ($payment) {
+            session('home_good_id', '');
+            session('home_good_num', '');
+            switch ($payment) {                   //1=>'支付宝',2=>'微信',3=>'粮票',4=>'充值卡',5=>'积分'
                 case 1 :
-                    //充值卡支付
-                    $user = Db::table('users')->find($this->userId);
-                    if (md5($input['password'] !== $user['pay_password'])) {
-                        return json(['msg' => '支付密码不正确', 'code' => 1002]);
-                    }
-                    if ($result['price'] > $user['recharge_card']) {
-                        return json(['msg' => '充值卡余额不足', 'code' => 1002]);
-                    }
-                    if ($result == 'error_num') {
-                        return json(['msg' => '商品数量错误', 'code' => 1002]);
-                    }
-                    //减少用户充值卡金额
-                    $res = Db::table('users')->where('id', $user['id'])->setDec('recharge_card', $result['price']);
+                    //支付宝支付
+                    break;
+                case 2 :
+                    //微信支付
+                    break;
+                case 3 :
+                    //粮票支付
+                    $res = $this->payGoods($input['password'], 'balance', '粮票不足', $input['price'], $result);
                     if ($res) {
                         return json(['msg' => '购买成功', 'code' => 200]);
                     }
+                    return json(['msg' => '购买失败', 'code' => 1001]);
                     break;
-                case 2 :
-                    //支付宝支付
+                case 4 :
+                    //充值卡支付
+                    $res = $this->payGoods($input['password'], 'recharge_card', '充值卡金额不足', $input['price'], $result);
+                    if ($res) {
+                        return json(['msg' => '购买成功', 'code' => 200]);
+                    }
+                    return json(['msg' => '购买失败', 'code' => 1001]);
                     break;
-                case 3 :
-                    //微信支付
+                case 5 :
+                    //积分支付
+                    $res = $this->payGoods($input['password'], 'score', '积分不足', $input['price'], $result);
+                    if ($res) {
+                        return json(['msg' => '购买成功', 'code' => 200]);
+                    }
+                    return json(['msg' => '购买失败', 'code' => 1001]);
                     break;
             }
         }
 
+    }
 
+    /**
+     * 购买商品方式
+     * 粮票支付
+     * 充值卡支付
+     * 积分支付
+     */
+    public function payGoods($password, $payment, $remark, $price, $result)
+    {
+        $user = Db::table('users')->find($this->userId);
+        if (md5($password) !== $user['pay_password']) {
+            return json(['msg' => '支付密码不正确', 'code' => 1002]);
+        }
+        if ($price > $user[$payment]) {
+            return json(['msg' => $remark, 'code' => 1002]);
+        }
+        if ($result == 'error_num') {
+            return json(['msg' => '商品数量错误', 'code' => 1002]);
+        }
+        //减少用户充值卡金额
+        $res = Db::table('users')->where('id', $user['id'])->setDec($payment, $result['price']);
+        return $res;
     }
 
 
@@ -169,9 +198,16 @@ class Orders extends Controller
         try {
             $res = Order::create($order);   //保存订单
             if ($res) {
+                $good = [];
                 foreach ($goodId as $key => $val) {
                     $shop[$key]['order_id'] = $res['id'];
+                    //扣除商品库存
+                    $good[] = [
+                        'id' => $val,
+                        'num' => ['exp', 'num - 1'],
+                    ];
                 }
+                Db::table('good')->update($good);
                 $detail = Db::table('order_detail')
                     ->insertAll($shop);             //保存订单详情
                 $addrData = Db::table('address')
@@ -195,20 +231,98 @@ class Orders extends Controller
 
 
 
-    public function orderList(Request $request){
+    /**
+     * @param Request $request
+     * @return \think\response\Json
+     * 订单列表
+     * 1代付款 2 待收货 3 代发货 4已完成
+     */
+    public function orderList(Request $request)
+    {
         $status = $request->param('status');
-        $order = Order::all(['uid'=>$this->userId,'status'=>$status]);
+        $order = Order::all(['uid' => $this->userId, 'status' => $status]);
         $return = [];
-        foreach($order as $key=>$val){
+        foreach ($order as $key => $val) {
             $return[$key]['order_num'] = $val['pay_order_num'];
             $return[$key]['status'] = Order::STATUS[$val['status']];
             $return[$key]['good'] = $val['orderDetail'];
             $return[$key]['totalNum'] = $val['total_num'];
             $return[$key]['totalPrice'] = $val['price'];
         }
-        dump($return[0]['good']);
+        return json(['data' => $return, 'msg' => '查询成功', 'code' => 200]);
     }
 
 
+    /**
+     * @param Request $request
+     * @return \think\response\Json
+     * 订单详情
+     *传入订单id
+     */
+    public function orderDetail(Request $request)
+    {
+        $orderId = $request->param('orderId');
+        $order = Order::get($orderId);
+        $return = [];
+        $return['id'] = $order['id'];
+        $return['order_num'] = $order['pay_order_num'];
+        $return['status'] = Order::STATUS[$order['status']];
+        $return['address'] = $order['orderInfo'];
+        $return['good'] = $order['orderDetail'];
+        $return['price'] = $order['price'];
+        $return['cour_code'] = $order['cour_code'];
+        return json(['data' => $return, 'msg' => '查询成功', 'code' => 200]);
+    }
 
+
+    /**
+     * @param Request $request
+     * @return \think\response\Json
+     * @throws Exception
+     * 取消订单
+     * 传入订单id
+     */
+    public function cancelOrder(Request $request)
+    {
+        $orderId = $request->param('orderId');
+        $res = Db::table('order')->where('id', $orderId)->delete();
+        if ($res) {
+            return json(['msg' => '取消订单成功', 'code' => 200]);
+        }
+        return json(['msg' => '取消订单失败', 'code' => 1001]);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return \think\response\Json
+     * @throws Exception
+     * 确认收货
+     * 传入订单id
+     */
+    public function sureGet(Request $request)
+    {
+        $orderId = $request->param('orderId');
+        $res = Db::table('order')->where('id', $orderId)->update(['status' => 4]);
+        if ($res) {
+            return json(['msg' => '确认收货成功', 'code' => 200]);
+        }
+        return json(['msg' => '确认收货失败', 'code' => 1001]);
+    }
+
+
+    /**
+     * 用户成为合伙人
+     * 冻结金额转化余额
+     */
+    public function frozenChange(){
+        $user = Db::table('users')->where('id',$this->userId)->find();
+        if($user['type'] == 2 && $user['type_time'] <= date('Y-m-d H:i:s',time() - 86400)){
+            if($user['frozen_price'] > 0){
+                $user['balance'] += $user['frozen_price'];
+                $user['frozen_price'] = 0;
+                $user->save();
+            }
+        }
+    }
 }
