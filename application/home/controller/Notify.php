@@ -53,44 +53,26 @@ class Notify extends Controller
                    file_put_contents('错误信息.txt','订单id:'.$order['id'].'支付金额:'.$total_fee."\n",FILE_APPEND);
                    echo 'success';
                }*/
-            if ($order['status'] == 1) {
-                Db::startTrans();
-                try {
-                    //对上级返佣
-                    $this->rebate($order['uid'], $total_fee);
-                    //对上级产生团队业绩
-                    $this->getTeamBouns($order['uid'], $total_fee);
-                    if ($order['type'] == 2) {                    //排位订单
-                        //进入排位
-                        $this->goQualifying($order['uid']);
-                    }
-                    //修改订单状态
-                    Db::table('order')->where('id', $order['id'])->update(['status' => 2]);
-                    Db::commit();
-                    echo 'success';
-                } catch (Exception $e) {
-                    Db::rollback();
-                    echo 'fail';
-                }
-            }
-        }
-    }
-
-    public function aliPayNotify(Request $request)
-    {
-        $arr = $request->post();
-        $file = 'ali_notify.log';
-        file_put_contents('123.txt','123'."\n",FILE_APPEND);
-        $this->log_result($file, $arr);
-        $config = Config::config();
-        $alipayService = new AlipayTradeService($config);
-        $result = $alipayService->check($arr);
-        if ($result) {
-            $orderCode = htmlspecialchars($arr['out_trade_no']);
-            $order = Db::table('order')->where('pay_order_num',$orderCode)->find();
-            if($arr['trade_status'] == 'TRADE_SUCCESS'){
-                $total_fee = $arr['total_amount'];
+            if($order['is_score'] == 2){
                 if($order['status'] == 1){
+                    //增加用户余额
+                    Db::startTrans();
+                    try{
+                        Db::table('users')->where('id',$order['uid'])->setInc('score',$order['price']);
+                        //增加余额记录
+                        $score = new Score();
+                        $score->insertData($order['uid'],$order['price'],'微信充值');
+                        Db::commit();
+                        return 'success';
+                    }catch(Exception $e){
+                        Db::rollback();
+                        return 'fail';
+                    }
+
+
+                }
+            }else{
+                if ($order['status'] == 1) {
                     Db::startTrans();
                     try {
                         //对上级返佣
@@ -109,6 +91,64 @@ class Notify extends Controller
                         Db::rollback();
                         echo 'fail';
                     }
+                }
+
+            }
+        }
+    }
+
+    public function aliPayNotify(Request $request)
+    {
+        $arr = $request->post();
+        $file = 'ali_notify.log';
+        file_put_contents('123.txt','123'."\n",FILE_APPEND);
+        $this->log_result($file, $arr);
+        $config = Config::config();
+        $alipayService = new AlipayTradeService($config);
+        $result = $alipayService->check($arr);
+        if ($result) {
+            $orderCode = htmlspecialchars($arr['out_trade_no']);
+            $order = Db::table('order')->where('pay_order_num',$orderCode)->find();
+            if($arr['trade_status'] == 'TRADE_SUCCESS'){
+                $total_fee = $arr['total_amount'];
+                if($order['is_score'] == 2){
+                    if($order['status'] == 1){
+                        //增加用户余额
+                        Db::startTrans();
+                        try{
+                            Db::table('users')->where('id',$order['uid'])->setInc('score',$order['price']);
+                            //增加余额记录
+                            $score = new Score();
+                            $score->insertData($order['uid'],$order['price'],'微信充值');
+                            Db::commit();
+                            return 'success';
+                        }catch(Exception $e){
+                            Db::rollback();
+                            return 'fail';
+                        }
+                    }
+                }else{
+                    if($order['status'] == 1){
+                        Db::startTrans();
+                        try {
+                            //对上级返佣
+                            $this->rebate($order['uid'], $total_fee);
+                            //对上级产生团队业绩
+                            $this->getTeamBouns($order['uid'], $total_fee);
+                            if ($order['type'] == 2) {                    //排位订单
+                                //进入排位
+                                $this->goQualifying($order['uid']);
+                            }
+                            //修改订单状态
+                            Db::table('order')->where('id', $order['id'])->update(['status' => 2]);
+                            Db::commit();
+                            echo 'success';
+                        } catch (Exception $e) {
+                            Db::rollback();
+                            echo 'fail';
+                        }
+                    }
+
                 }
             }
         }

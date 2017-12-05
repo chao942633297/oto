@@ -13,9 +13,9 @@ class Useraccount extends Base
 {	
 	protected $userId;
 
-	public function _initialize()
+	public function __construct()
 	{
-		parent::_initialize();
+		parent::__construct();
 		$this->userId = session('uid');
 	}
 
@@ -274,11 +274,6 @@ class Useraccount extends Base
 		return json(['status'=>200,'msg'=>'请求成功','data'=>$data]);
 	}
 
-	#兑换积分
-	public function exchangeIntegral()
-	{
-
-	}
 
 	#获取用户可使用的店铺积分
 	public function useShopIntegral()
@@ -347,6 +342,7 @@ class Useraccount extends Base
 			$datas['withdrawals_id']= $orderId;
 			$res  = Db::table('integral')->insert($data);
 			$res1 = Db::table('integral')->insert($datas);
+
 			if ($res && $res1) {
 				Db::commit();
 				return json(['status'=>200,'msg'=>'提现提交成功']);

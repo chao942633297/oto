@@ -84,10 +84,10 @@ class Orders extends Base
         }
         //判断是否设置支付密码
         $is_payPwd = 0;
-        if(Db::table('users')->where('id',$this->userId)->value('pay_password')){
+        if (Db::table('users')->where('id', $this->userId)->value('pay_password')) {
             $is_payPwd = 1;
         }
-        return json(['data' => ['addr' => $return, 'shop' => $shop,], 'totalPrice' => $totalPrice, 'money' => $money, 'type' => $order_type,'is_payPwd'=>$is_payPwd, 'msg' => '查询成功', 'code' => 200]);
+        return json(['data' => ['addr' => $return, 'shop' => $shop,], 'totalPrice' => $totalPrice, 'money' => $money, 'type' => $order_type, 'is_payPwd' => $is_payPwd, 'msg' => '查询成功', 'code' => 200]);
     }
 
 
@@ -130,7 +130,7 @@ class Orders extends Base
             if (empty($input['password']) || md5($input['password']) !== $user['pay_password']) {
                 return json(['msg' => '支付密码不正确', 'code' => 1003]);
             }
-            $userMoney = $user[$pay_type]?:'';
+            $userMoney = $user[$pay_type] ?: '';
         }
         $result = $this->saveOrder($input['goodId'], $input['goodNum'], $msg, $type, $payment, $input['addrId'], $userMoney);
         if ($result == 'error_num') {
@@ -142,7 +142,7 @@ class Orders extends Base
         if ($result) {
             session('home_good_id', '');
             session('home_good_num', '');
-            switch ($payment) {                   //1 充值卡支付 2支付宝支付 3 微信支付 4积分支付 5 粮票支付
+            switch ($payment) {                   //1 充值卡支付 2支付宝支付 3 微信支付 4积分支付
                 case 1 :
                     //充值卡支付
                     $res = Db::table('users')->where('id', $user['id'])->setDec($pay_type, $result['price']);
@@ -153,24 +153,16 @@ class Orders extends Base
                     break;
                 case 2 :
                     //支付宝
-                    $ali_url = "http://".config('back_url')."/home/Alipay/webPay?orderId=". $result['id'];
-                    return json(['data'=>$ali_url,'msg'=>'支付宝支付','code'=>200]);
+                    $ali_url = "http://" . config('back_url') . "/home/Alipay/webPay?orderId=" . $result['id'];
+                    return json(['data' => $ali_url, 'msg' => '支付宝支付', 'code' => 200]);
                     break;
                 case 3 :
                     //微信支付
-                    $wechat_url = "http://".config('back_url')."/home/wxpay/wechatPay?orderId=".$result['id'];
-                    return json(['data'=>$wechat_url,'msg'=>'微信支付','code'=>200]);
+                    $wechat_url = "http://" . config('back_url') . "/home/wxpay/wechatPay?orderId=" . $result['id'];
+                    return json(['data' => $wechat_url, 'msg' => '微信支付', 'code' => 200]);
                     break;
                 case 4 :
                     //积分支付
-                    $res = Db::table('users')->where('id', $user['id'])->setDec($pay_type, $result['price']);
-                    if ($res) {
-                        return json(['msg' => '购买成功', 'code' => 200]);
-                    }
-                    return json(['msg' => '购买失败', 'code' => 1001]);
-                    break;
-                case 5 :
-                    //粮票支付
                     $res = Db::table('users')->where('id', $user['id'])->setDec($pay_type, $result['price']);
                     if ($res) {
                         return json(['msg' => '购买成功', 'code' => 200]);
@@ -256,7 +248,6 @@ class Orders extends Base
     }
 
 
-
     /**
      * @param Request $request
      * @return \think\response\Json
@@ -322,26 +313,23 @@ class Orders extends Base
     }
 
 
-
-    public function paynow(Request $request){
+    public function paynow(Request $request)
+    {
         $payment = $request->param('payment');
-        $orderId= $request->param('orderId');
-        if(empty($payment) || empty($orderId)){
-            return json(['msg'=>'参数错误','code'=>1001]);
+        $orderId = $request->param('orderId');
+        if (empty($payment) || empty($orderId)) {
+            return json(['msg' => '参数错误', 'code' => 1001]);
         }
         $url = '';
-        if($payment == 2){
+        if ($payment == 2) {
             //支付宝支付
-            $url = "http://".config('back_url')."/home/Alipay/webPay?orderId=". $orderId;
-        }else if($payment == 3){
+            $url = "http://" . config('back_url') . "/home/Alipay/webPay?orderId=" . $orderId;
+        } else if ($payment == 3) {
             //微信支付
-            $url = "http://".config('back_url')."/home/wxpay/wechatPay?orderId=".$orderId;
+            $url = "http://" . config('back_url') . "/home/wxpay/wechatPay?orderId=" . $orderId;
         }
-        return json(['data'=>$url,'msg'=>'成功','code'=>200]);
+        return json(['data' => $url, 'msg' => '成功', 'code' => 200]);
     }
-
-
-
 
 
     /**
@@ -377,9 +365,5 @@ class Orders extends Base
             }
         }
     }
-<<<<<<< HEAD
 
-
-=======
->>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
 }
