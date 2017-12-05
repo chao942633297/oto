@@ -47,7 +47,10 @@ class Member extends Base
                     $selectResult[$key]['fatherphone'] = '';
                 }
                 $selectResult[$key]['headimg'] = "<img src='".$vo->headimg."' width=50px; height=50px;>";
+<<<<<<< HEAD
                 $selectResult[$key]['wechat_qrcode'] = "<img src='".$vo->wechat_qrcode."' width=50px; height=50px;>";
+=======
+>>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
 
                 $selectResult[$key]['operate'] = showOperate($this->makeButton($vo['id'],$vo['is_union'],$vo['team_switch']));
                 $selectResult[$key]['type'] = UsersModel::TYPE[$vo['type']];
@@ -389,7 +392,11 @@ class Member extends Base
      * @param $id
      * @return array
      */
+<<<<<<< HEAD
     private function makeButton($id,$type='',$status='')
+=======
+    private function makeButton($id,$type,$status)
+>>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
     {   
         if ($type == 1 && $status==1) {
             return [
@@ -498,6 +505,7 @@ class Member extends Base
                     'btnStyle' => 'primary',
                     'icon' => 'fa fa-paste'
                 ],
+<<<<<<< HEAD
                 // '积分提现比例' => [
                 //     'auth' => 'member/integral_rebate',
                 //     'href' => "javascript:integral_rebate(" .$id .")",
@@ -510,6 +518,20 @@ class Member extends Base
                 //     'btnStyle' => 'danger',
                 //     'icon' => 'fa fa-paste'
                 // ]                                                      
+=======
+                '积分提现比例' => [
+                    'auth' => 'member/integral_rebate',
+                    'href' => "javascript:integral_rebate(" .$id .")",
+                    'btnStyle' => 'primary',
+                    'icon' => 'fa fa-paste'
+                ],
+                '关闭团队奖' => [
+                    'auth' => 'member/open_team',
+                    'href' => "javascript:open_team(" .$id .")",
+                    'btnStyle' => 'danger',
+                    'icon' => 'fa fa-paste'
+                ]                                                      
+>>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
             ];            
         }
           

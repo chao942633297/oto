@@ -5,6 +5,7 @@ use app\admin\model\NodeModel;
 use app\admin\model\Order as Orders;
 use app\home\model\CashRecord;
 use app\admin\model\UsersModel;
+use app\admin\model\UserMoneyLog;
 
 
 class Index extends Base
@@ -41,9 +42,16 @@ class Index extends Base
         #今日订单金额
         $todayOrderMoney = Orders::where('status','>',1)->whereBetween('created_at',[$start_time,$end_time])->sum('real_price');
 
+        #今日发放红包金额
+        $todayRedMoney = UserMoneyLog::where('type',">=",7)->whereBetween('created_at',[$start_time,$end_time])->sum('money');
+
+        #总发放红包金额
+        $redMoney = UserMoneyLog::where('type',">=",7)->sum('money');
         $this->assign('user',$user);
         $this->assign('order',$order);
+        $this->assign('redMoney',$redMoney);
         $this->assign('orderMoney',$orderMoney);
+        $this->assign('todayRedMoney',$todayRedMoney);
         $this->assign('todayOrderMoney',$todayOrderMoney);
         return $this->fetch('index');
     }

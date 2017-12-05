@@ -256,6 +256,7 @@ class Orders extends Base
     }
 
 
+
     /**
      * @param Request $request
      * @return \think\response\Json
@@ -376,6 +377,9 @@ class Orders extends Base
             }
         }
     }
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
 }

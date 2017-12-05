@@ -5,6 +5,7 @@ use app\admin\model\UsersModel;
 use think\Controller;
 use service\ChuanglanSmsApi;
 use app\home\model\PhoneCode;
+use app\home\controller\Base;
 #登录
 class Login extends Controller
 {	
@@ -24,6 +25,8 @@ class Login extends Controller
 			return json(['status'=>-1,'msg'=>'账号或者密码错误']);
 		}
 		session('uid',$user['id']);
+    	Base::redMoney($user['id'],7);	//发红包
+
 		return json(['status'=>200,'msg'=>'ok']);
 	}
 
@@ -68,7 +71,7 @@ class Login extends Controller
 		$data['created_at'] = time();
 		#注册用户插入表中
 		$result = $model->allowField(true)->save($data);
-		if ($result== 1) {
+		if ($result) { 
 			return json(['status'=>1,'msg'=>'注册成功']);
 		}
 

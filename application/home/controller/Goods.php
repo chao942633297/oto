@@ -4,10 +4,15 @@ namespace app\home\controller;
 
 
 use app\admin\model\GoodsModel;
+<<<<<<< HEAD
 use app\admin\model\Users;
+=======
+use app\admin\model\UsersModel;
+>>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
 use think\Controller;
 use think\Db;
 use think\Request;
+use service\Wechat as Wechats;
 
 class Goods extends Controller
 {
@@ -29,6 +34,7 @@ class Goods extends Controller
             $type = $request->param('type');
             $where['type'] = $type;
         }
+<<<<<<< HEAD
         if ($request->has('class')) {                          //搜索分类
             //选择分类,则分类热度加一
             Db::table('good_class')->where('id', $request->param('class'))->setInc('hot');
@@ -40,16 +46,24 @@ class Goods extends Controller
         $where['status'] = 1;
         $goods = Db::table('good')
             ->field('id,name,img,price,rebate')
+=======
+        $where['type'] = $type;
+        $goods = Db::table('good')
+>>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
             ->where($where)
             ->limit($page, $list)
             ->order('id', 'desc')
             ->select();
+<<<<<<< HEAD
         //分类
         $class = [];
         if (isset($type) && $type == 2) {
             $class = Db::table('good_class')->order('hot', 'desc')->select();
         }
         return json(['data' => $goods, 'class' => $class, 'msg' => '查询成功', 'code' => 200]);
+=======
+        return json(['data' => $goods, 'msg' => '查询成功', 'code' => 200]);
+>>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
     }
 
 
@@ -89,5 +103,21 @@ class Goods extends Controller
         return json(['data' => $goodparam, 'msg' => '查询成功', 'code' => 200]);
     }
 
+<<<<<<< HEAD
+=======
+    #商品分享
+    private function goodsShare()
+    {
+        #获取商品信息
+        $goods = GoodsModel::where('id',input('param.id'))->select('id,thumbnail,name')->find();
+        #获取jsapi 分享接口
+        $jsapi_config = json_decode(Wechats::get_jsapi_config(['onMenuShareTimeline','onMenuShareAppMessage'],false,false),true);
+        #获取用户唯一标识
+        $unique = UsersModel::where('id',session('uid'))->value('unique');
+        
+        return json(['status'=>200,'msg'=>'获取jsapi','data'=>['goods'=>$goods,'jsapi_config'=>$jsapi_config,'unique'=>$unique]);       
+    }
+
+>>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
 
 }

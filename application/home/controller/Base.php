@@ -5,8 +5,11 @@ use app\admin\model\UserModel;
 use think\Controller;
 use app\admin\model\Config;
 use app\admin\model\UserMoneyLog;
+<<<<<<< HEAD
 use think\Db;
 use think\Exception;
+=======
+>>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
 
 
 #控制层
@@ -58,6 +61,7 @@ class Base extends Controller
 		$data = self::redData($uid,$type);
 
 		$model = new UserMoneyLog();
+<<<<<<< HEAD
 		Db::startTrans();
 		try {
 			$res = $model->insert($data);
@@ -68,6 +72,9 @@ class Base extends Controller
 		} catch (Exception $e) {
 			Db::rollback();
 		}
+=======
+		$model->insert($data);
+>>>>>>> d6219139cdc20808b2f0254de700df924a1e09e2
 		return true;
 	}
 

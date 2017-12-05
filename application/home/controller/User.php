@@ -19,6 +19,14 @@ class User extends Base
 
 	}
 
+	#根据unique获取用户信息
+	public function getUserPhoneByUnique()
+	{
+		$user = UsersModel::where('id',input('param.unique'))->value('phone');
+		return json(['status'=>200,'msg'=>'ok','data'=>$user]);
+	}
+
+
 	#根据id获取用户信息
 	public function getUserInfoById()
 	{
@@ -73,7 +81,8 @@ class User extends Base
 		if (empty($user)) {
 			return json(['status'=>2000,'msg'=>'请登录']);
 		}
-		$param = md5($user->phone);
+		// $param = md5($user->phone);
+		$param = $user->unique;
 		qrcode($param);
 		#取出生成的二维码
 		$data = [];
@@ -83,7 +92,7 @@ class User extends Base
 		$data['unique'] = $param;
 		if (IS_WECHAT) {
 			#设置session shareUrl
-			session('shareUrl','http://www.oto178.com/code.html?unique='.$param);
+			session('shareUrl',WEB_URL.'/code.html?unique='.$param);
 			# 获取jsapi
 			$jsapi_config = Wechats::get_jsapi_config(['onMenuShareTimeline','onMenuShareAppMessage'],false,false);
 			# 分配JSapi配置

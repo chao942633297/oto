@@ -48,6 +48,8 @@
                         <th data-field="type">用户身份</th>
                         <th data-field="card">身份证</th>
                         <th data-field="is_union">是否为联盟商家</th>
+                        <th data-field="team_switch">是否发放团队奖</th>
+                        <th data-field="integral_rebate">联盟商家积分提现比例</th>
                         <th data-field="created_at">注册时间</th>
                         <th data-field="operate">操作</th>
                         </thead>
@@ -75,6 +77,23 @@
     </tbody>
 </table>
 <!-- 资金明细结束 -->
+<div class='table table-bordered' style="display: none;" id="wait">
+    <form method="post" style="margin-top: 15px;" id="myform">
+        <div class="form-group">
+            <label class="control-label col-sm-4" style="height: 34px;line-height: 34px">参数：</label>
+            <div class="input-group col-sm-6">
+
+                <input id="value_num" type="number" data-id="" class="form-control" name="value_num" required=""
+                       aria-required="true" value="" >
+            </div>
+        </div>                     
+        <div class="form-group" >
+            <div class="col-sm-10 col-sm-offset-2">
+                <button class="btn btn-primary " type="button" style="float: right;margin:15px auto" id="biaoshi">提交</button>
+            </div>
+        </div>
+    </form>
+</div>
 <!-- End Panel Other -->
 </div>
 {include file="/public/footer" /}
@@ -165,5 +184,68 @@
         m = date.getMinutes() + ':';
         s = date.getSeconds();
         return Y+M+D+h+m+s; 
+    }
+    function integral_rebate(id){
+
+       $.getJSON("{:url('member/integral_rebate')}", {'id' : id,type:1}, function(res){
+            $('#value_num').val(res.data['integral_rebate']);
+            $('#value_num').data('id',id);
+        }) 
+        layer.open({
+            type: 1,
+            area:'400px',
+            title:'联盟商积分提现比例',
+            skin: 'layui-layer-demo', //加上边框
+            content: $('#wait')
+        });
+
+    }
+   $('#biaoshi').on('click',function(){
+        layer.closeAll();
+        var value = $('#value_num').val();
+        var id = $('#value_num').data('id');
+        if (parseFloat(value) >100 ) {
+            alert('参数不可大于100');
+            return false;
+        }
+        $.ajax({
+            type: "GET",
+            url: "./integral_rebate",
+            data: {value:value,id:id,type:2},
+            dataType: "json",
+            success: function(res){
+                if (res.status == 1) {
+                    layer.alert(res.msg, {title: '友情提示', icon: 1, closeBtn: 0}, function(){
+                        window.location.href = res.data;
+                    });
+                }else{
+                    layer.alert(res.msg, {title: '友情提示', icon: 1, closeBtn: 0}, function(){
+                        
+                    });
+                }
+                
+            }
+        });
+   });
+
+    function open_team(id){
+        $.ajax({
+            type: "GET",
+            url: "./open_team",
+            data: {id:id},
+            dataType: "json",
+            success: function(res){
+                if (res.status == 1) {
+                    layer.alert(res.msg, {title: '友情提示', icon: 1, closeBtn: 0}, function(){
+                        window.location.href = res.data;
+                    });
+                }else{
+                    layer.alert(res.msg, {title: '友情提示', icon: 1, closeBtn: 0}, function(){
+                        
+                    });
+                }
+                
+            }
+        });
     }
 </script>

@@ -22,8 +22,7 @@ class Address extends Base
 	public function myAddress()
 	{
 		$data = Addresss::getUserAddress($this->userId);
-
-		return jsonp(['status'=>200,'message'=>'请求成功','data'=>$data?:'']);
+		return json(['status'=>200,'message'=>'请求成功','data'=>$data?:'']);
 	}
 
 
@@ -31,6 +30,9 @@ class Address extends Base
 	public function addAddress()
 	{	
 		$param = input('param.');
+		if (empty($param)) {
+	    	return json(['status'=>401,'message'=>'请传参数']);
+		}
     	if ( $param['is_default'] == 2 ) {
 
     		if( Addresss::where(['uid'=>$this->userId,'is_default'=>2])->count() ){
@@ -40,7 +42,7 @@ class Address extends Base
     		}
 
 	    	if (!$res) {
-	    		return jsonp(['status'=>401,'message'=>'系统内部错误','data'=>'']);
+	    		return json(['status'=>401,'message'=>'系统内部错误','data'=>'']);
 	    	}
     	}
 
@@ -60,10 +62,10 @@ class Address extends Base
 		$res1 = $add->insert($data);
 		
 		if ($res1) {
-    		return jsonp(['status'=>200,'message'=>'添加成功','data'=>'']);
+    		return json(['status'=>200,'message'=>'添加成功','data'=>'']);
 		}
     	
-    	return jsonp(['status'=>401,'message'=>'添加失败','data'=>'']);
+    	return json(['status'=>401,'message'=>'添加失败','data'=>'']);
 
 	}
 
@@ -71,7 +73,7 @@ class Address extends Base
 	public function getOneAddress()
 	{
 		$data = Addresss::where('id',input('param.id'))->find();
-		return jsonp(['status'=>200,'message'=>'查询成功','data'=>$data]);
+		return json(['status'=>200,'message'=>'查询成功','data'=>$data]);
 	}
 
 	#确认编辑收货地址
@@ -82,7 +84,7 @@ class Address extends Base
 
 		$data['name'] = $param['name'];
 		$data['phone'] = $param['phone'];
-    	$data['guhua'] = $param['guhua'];
+    	// $data['guhua'] = $param['guhua'];
 		$data['province'] = $param['province'];
 		$data['city'] = $param['city'];
 		$data['area'] = $param['area'];
@@ -90,20 +92,19 @@ class Address extends Base
 		$data['updated_at'] = time();
 		
 		if (!input('param.id') || input('param.id') == '') {
-			return jsonp(['status'=>300,'message'=>'缺少参数','data'=>'']);
+			return json(['status'=>300,'message'=>'缺少参数','data'=>'']);
 		}
 		#开启事物
 		Db::startTrans();
 		$res = Addresss::where('id',input('param.id'))->update($data);
-		
 		if ($res) {
 			#提交事物
 			Db::commit();
-			return jsonp(['status'=>200,'message'=>'编辑成功','data'=>'']);
+			return json(['status'=>200,'message'=>'编辑成功','data'=>'']);
 		}else{
 			#回滚事物
 			Db::rollback();
-			return jsonp(['status'=>401,'message'=>'编辑失败','data'=>'']);
+			return json(['status'=>401,'message'=>'编辑失败','data'=>'']);
 		}
 
 		
@@ -115,15 +116,15 @@ class Address extends Base
 		$id = input('param.id');
 		
 		if (Addresss::where('id',$id)->value('is_default') == 2) {
-			return jsonp(['status'=>401,'message'=>'默认地址不可删除','data'=>'']);
+			return json(['status'=>401,'message'=>'默认地址不可删除','data'=>'']);
 		}
 
 		$res = Addresss::where(['id'=>$id,'uid'=>$this->userId])->update(['is_del'=>2,'updated_at'=>time()]);
 
 		if ($res) {
-			return jsonp(['status'=>200,'message'=>'删除成功','data'=>'']);			
+			return json(['status'=>200,'message'=>'删除成功','data'=>'']);			
 		}
-		return jsonp(['status'=>401,'message'=>'删除失败','data'=>'']);
+		return json(['status'=>401,'message'=>'删除失败','data'=>'']);
 	}
 
 	#设置默认收货地址
@@ -135,16 +136,16 @@ class Address extends Base
 		$res = Addresss::where('uid',$this->userId)->update(['is_default'=>1,'updated_at'=>time()]);
 
 		if (!$res) {
-			return jsonp(['status'=>401,'message'=>'解除默认地址失败','data'=>'']);
+			return json(['status'=>401,'message'=>'解除默认地址失败','data'=>'']);
 		}
 
 		$res1 = Addresss::where(['id'=>$id,'uid'=>$this->userId])->update(['is_default'=>2,'updated_at'=>time()]);
 
 		if ($res1) {
-			return jsonp(['status'=>200,'message'=>'设置成功','data'=>'']);
+			return json(['status'=>200,'message'=>'设置成功','data'=>'']);
 		}
 		
-		return jsonp(['status'=>401,'message'=>'设置默认地址失败','data'=>'']);
+		return json(['status'=>401,'message'=>'设置默认地址失败','data'=>'']);
 	}
 
 }
