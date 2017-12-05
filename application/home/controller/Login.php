@@ -171,7 +171,6 @@ class Login extends Controller
 				return json(['status'=>-1,'msg'=>'上次验证码还未失效']);	
 			}
 		}
-
 		if (!preg_match("/^1[34578]\d{9}$/", $param['phone'])) {
 			return json(['status'=>-1,'msg'=>'手机号格式错误']);	
 		}

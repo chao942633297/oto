@@ -80,6 +80,13 @@ function putExcel($file, $data, $tplFile = null, $skipRow = 1)
     PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007')->save($file);
 }
 
+function is_weixin(){
+    if (strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false ) {
+        return true;
+    }
+    return false;
+}
+
 /**
  * 从 Excel 获取所有行
  *

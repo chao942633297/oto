@@ -22,7 +22,7 @@ class File extends Controller
                 // 按照原图的比例生成一个最大为150*150的缩略图并保存为thumb.jpg
                 // $image -> thumb(600, 600) -> save('.'.$imgpath);//直接把缩略图覆盖原图
                 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-                return json(['code' => 1, 'data' => $protocol.$_SERVER['HTTP_HOST'].$imgpath, 'msg' =>'上传成功']);
+//                return json(['code' => 1, 'data' => $protocol.$_SERVER['HTTP_HOST'].$imgpath, 'msg' =>'上传成功']);
             }else{
                 // 上传失败获取错误信息
                 return ['code' => 2, 'data' =>'', 'msg' =>$file->getError()];

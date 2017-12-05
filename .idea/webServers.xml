@@ -2,7 +2,7 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="7d1838e2-71d9-429a-9eec-3e84a771c631" name="oto" url="http://121.42.251.110">
+      <webServer id="803c3dc6-86f2-4846-83fd-207ee93b57ba" name="oto" url="http://121.42.251.110">
         <fileTransfer host="121.42.251.110" port="21" password="dfc5dfdedfc5df98df9adf9bdf9d" username="oto">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />

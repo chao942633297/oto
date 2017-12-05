@@ -21,6 +21,9 @@ class Goods extends Base
             if (isset($param['type']) && $param['type'] != 0) {
                 $where['type'] = $param['type'];
             }
+            if (isset($param['status']) && $param['status'] != 0) {
+                $where['status'] = $param['status'];
+            }
             if (isset($param['class']) && $param['class'] != 0) {
                 $wherec['name'] = ['like','%' . $param['class'] . '%'];
                 $cids = db('good_class')->where($wherec)->column('id');
@@ -37,7 +40,7 @@ class Goods extends Base
             foreach($selectResult as $key=>$vo){
                 $selectResult[$key]['status'] = $vo['status'] == 1 ? '上架' : '下架';
                 $selectResult[$key]['recommend'] = $vo['recommend'] == 1 ? '推荐' : '未推荐';
-                $selectResult[$key]['type'] = db('good_class')->where(['id'=>$vo['type']])->value('name');
+                $selectResult[$key]['type'] = db('good_class')->where(['id'=>$vo['class']])->value('name');
 
                 $selectResult[$key]['img'] = "<img src='".$vo['img']."' width='50px' height='50px' />";
                 $selectResult[$key]['created_at'] = date('Y-m-d H:i:s',$vo['created_at']);

@@ -16,6 +16,7 @@ return [
     'app_debug' => true,
     'default_filter' => ['strip_tags', 'htmlspecialchars'],
 
+    'back_url' => 'admin.oto178.com',
 
     // +----------------------------------------------------------------------
     // | 缓存设置

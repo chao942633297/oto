@@ -6,6 +6,7 @@ use app\admin\model\UsersModel;
 use app\admin\model\UserMoneyLog;
 use app\admin\model\Apply;
 use app\admin\model\Message;
+use app\admin\model\Withdrawals;
 
 use think\Db;
 class Member extends Base
@@ -21,6 +22,7 @@ class Member extends Base
             $offset = ($param['pageNumber'] - 1) * $limit;
 
             $where = [];
+            $where['phone'] = ['<>',''];
             if (!empty($param['phone'])) {
                 $where['phone'] = ['like', '%' . trim($param['phone']) . '%'];
             }
@@ -44,10 +46,13 @@ class Member extends Base
                     $selectResult[$key]['fathername'] = '';
                     $selectResult[$key]['fatherphone'] = '';
                 }
-                $selectResult[$key]['is_union'] = $vo['is_union'] == 1 ? "<button class='btn btn-danger'>否</button>" : "<button class='btn btn-primary'>是</button>" ;
                 $selectResult[$key]['headimg'] = "<img src='".$vo->headimg."' width=50px; height=50px;>";
-                $selectResult[$key]['operate'] = showOperate($this->makeButton($vo['id']));
+                $selectResult[$key]['wechat_qrcode'] = "<img src='".$vo->wechat_qrcode."' width=50px; height=50px;>";
+
+                $selectResult[$key]['operate'] = showOperate($this->makeButton($vo['id'],$vo['is_union'],$vo['team_switch']));
                 $selectResult[$key]['type'] = UsersModel::TYPE[$vo['type']];
+                $selectResult[$key]['is_union'] = $vo['is_union'] == 1 ? "<button class='btn btn-danger'>否</button>" : "<button class='btn btn-primary'>是</button>" ;
+                $selectResult[$key]['team_switch'] = $vo['team_switch'] == 1 ? "<button class='btn btn-danger'>否</button>" : "<button class='btn btn-primary'>是</button>" ;
                 $selectResult[$key]['created_at'] = date('Y-m-d H:i:s',$vo['created_at']);
             }
 
@@ -72,6 +77,8 @@ class Member extends Base
             $offset = ($param['pageNumber'] - 1) * $limit;
 
             $where = [];
+            $where['phone'] = ['<>',''];
+            
             $beginToday=mktime(0,0,0,date('m'),date('d'),date('Y'));
             $endToday=mktime(0,0,0,date('m'),date('d')+1,date('Y'))-1;
             $where['created_at'] = ["between",[$beginToday,$endToday]];
@@ -132,6 +139,13 @@ class Member extends Base
 
             // 拼装参数
             foreach($selectResult as $key=>$vo){
+                if ( empty($selectResult[$key]['name']) ) {
+                    $selectResult[$key]['name'] = $vo->users->nickname;
+                }
+                if ( empty($selectResult[$key]['phone']) ) {
+                    $selectResult[$key]['phone'] = $vo->users->phone;
+                }
+                
                 $selectResult[$key]['license'] = "<img src='".$vo->license."' width=45px height=45px>";
                 if ( $vo->status == 1) {
                     $selectResult[$key]['operate'] = showOperate($this->makeButtons($vo['id']));
@@ -180,6 +194,27 @@ class Member extends Base
     }
 
 
+    #添加联盟商提现比例
+    public function integral_rebate()
+    {
+
+        if (request()->isAjax() && input('param.type') == 2) {
+
+            $data = input('param.');
+            $model = new UsersModel();
+            
+            $res = $model->where('id',$data['id'])->update(['integral_rebate'=>$data['value']]);            
+            if ($res == 1) {
+                return json(['status'=>1,'msg'=>'修改成功','data'=>url('member/index')]);
+            }else{
+                return json(['status'=>-1,'msg'=>'修改失败','data'=>'']);
+            }
+        }
+        $id = input('param.id');
+        $config = UsersModel::where('id',$id)->find();
+        return json(['status'=>true,'msg'=>'查询成功','data'=>$config]);
+    }
+
 
     // 编辑用户
     public function userEdit()
@@ -214,6 +249,7 @@ class Member extends Base
         $id = input('param.id');
 
         $log  = new UserMoneyLog();
+        $withdrawals = new Withdrawals();
         $data = [];
         #获取可用会员粮票
         $data['balance'] = $log->getBalance($id,1);
@@ -224,7 +260,7 @@ class Member extends Base
         #获取分销佣金 
         $data['distribution'] = $log->getTypeBalance($id,2);
         #获取提现金额
-        $data['cash'] = abs( $log->getTypeBalance($id,4) );
+        $data['cash'] = $withdrawals->where(['uid'=>$id,'status'=>2])->sum('real_money');
 
         #消费积分 -- 公用消费积分 --> 
         $all =  Db::table('integral')->where(['uid'=>$id,'type'=>1,'is_add'=>1])->sum('value');
@@ -329,34 +365,154 @@ class Member extends Base
         return $this->fetch();        
     }
 
+    #开启关闭团队奖
+    public function open_team()
+    {
+        $open = UsersModel::where('id',input('param.id'))->value('team_switch');
+        #
+        if ($open == 1) {
+            $res = UsersModel::where('id',input('param.id'))->update(['team_switch'=>2]);       
+        }else{
+            $res = UsersModel::where('id',input('param.id'))->update(['team_switch'=>1]);       
+        }
+        
+        if ($res == 1) {
+            return json(['status'=>1,'msg'=>'操作成功','data'=>url('member/index')]);
+        }else{
+            return json(['status'=>-1,'msg'=>'操作失败','data'=>'']);
+        }        
+        
+    }
 
     /**
      * 拼装操作按钮
      * @param $id
      * @return array
      */
-    private function makeButton($id)
+    private function makeButton($id,$type='',$status='')
     {   
-        return [
-            '编辑' => [
-                'auth' => 'member/useredit',
-                'href' => url('member/userEdit', ['id' => $id]),
-                'btnStyle' => 'warning',
-                'icon' => 'fa fa-paste'
-            ],
-            '资金管理' => [
-                'auth' => 'member/user_money',
-                'href' => "javascript:user_money(" .$id .")",
-                'btnStyle' => 'primary',
-                'icon' => 'fa fa-paste'
-            ],
-            '发信' => [
-                'auth' => 'member/user_letter',
-                'href' => url('member/user_letter', ['id' => $id]),
-                'btnStyle' => 'primary',
-                'icon' => 'fa fa-paste'
-            ]                          
-        ];            
+        if ($type == 1 && $status==1) {
+            return [
+                '编辑' => [
+                    'auth' => 'member/useredit',
+                    'href' => url('member/userEdit', ['id' => $id]),
+                    'btnStyle' => 'warning',
+                    'icon' => 'fa fa-paste'
+                ],
+                '资金管理' => [
+                    'auth' => 'member/user_money',
+                    'href' => "javascript:user_money(" .$id .")",
+                    'btnStyle' => 'primary',
+                    'icon' => 'fa fa-paste'
+                ],
+                '发信' => [
+                    'auth' => 'member/user_letter',
+                    'href' => url('member/user_letter', ['id' => $id]),
+                    'btnStyle' => 'primary',
+                    'icon' => 'fa fa-paste'
+                ],
+                '开启团队奖' => [
+                    'auth' => 'member/open_team',
+                    'href' => "javascript:open_team(" .$id .")",
+                    'btnStyle' => 'danger',
+                    'icon' => 'fa fa-paste'
+                ]                                   
+            ];            
+        }elseif ($type == 1 && $status==2) {
+            return [
+                '编辑' => [
+                    'auth' => 'member/useredit',
+                    'href' => url('member/userEdit', ['id' => $id]),
+                    'btnStyle' => 'warning',
+                    'icon' => 'fa fa-paste'
+                ],
+                '资金管理' => [
+                    'auth' => 'member/user_money',
+                    'href' => "javascript:user_money(" .$id .")",
+                    'btnStyle' => 'primary',
+                    'icon' => 'fa fa-paste'
+                ],
+                '发信' => [
+                    'auth' => 'member/user_letter',
+                    'href' => url('member/user_letter', ['id' => $id]),
+                    'btnStyle' => 'primary',
+                    'icon' => 'fa fa-paste'
+                ],
+                '关闭团队奖' => [
+                    'auth' => 'member/open_team',
+                    'href' => "javascript:open_team(" .$id .")",
+                    'btnStyle' => 'danger',
+                    'icon' => 'fa fa-paste'
+                ]                                   
+            ];     
+        }else if ($type == 2 && $status == 1) {
+            return [
+                '编辑' => [
+                    'auth' => 'member/useredit',
+                    'href' => url('member/userEdit', ['id' => $id]),
+                    'btnStyle' => 'warning',
+                    'icon' => 'fa fa-paste'
+                ],
+                '资金管理' => [
+                    'auth' => 'member/user_money',
+                    'href' => "javascript:user_money(" .$id .")",
+                    'btnStyle' => 'primary',
+                    'icon' => 'fa fa-paste'
+                ],
+                '发信' => [
+                    'auth' => 'member/user_letter',
+                    'href' => url('member/user_letter', ['id' => $id]),
+                    'btnStyle' => 'primary',
+                    'icon' => 'fa fa-paste'
+                ],
+                '积分提现比例' => [
+                    'auth' => 'member/integral_rebate',
+                    'href' => "javascript:integral_rebate(" .$id .")",
+                    'btnStyle' => 'primary',
+                    'icon' => 'fa fa-paste'
+                ],
+                '开启团队奖' => [
+                    'auth' => 'member/open_team',
+                    'href' => "javascript:open_team(" .$id .")",
+                    'btnStyle' => 'danger',
+                    'icon' => 'fa fa-paste'
+                ]                                                      
+            ];  
+        }else{
+            return [
+                '编辑' => [
+                    'auth' => 'member/useredit',
+                    'href' => url('member/userEdit', ['id' => $id]),
+                    'btnStyle' => 'warning',
+                    'icon' => 'fa fa-paste'
+                ],
+                '资金管理' => [
+                    'auth' => 'member/user_money',
+                    'href' => "javascript:user_money(" .$id .")",
+                    'btnStyle' => 'primary',
+                    'icon' => 'fa fa-paste'
+                ],
+                '发信' => [
+                    'auth' => 'member/user_letter',
+                    'href' => url('member/user_letter', ['id' => $id]),
+                    'btnStyle' => 'primary',
+                    'icon' => 'fa fa-paste'
+                ],
+                // '积分提现比例' => [
+                //     'auth' => 'member/integral_rebate',
+                //     'href' => "javascript:integral_rebate(" .$id .")",
+                //     'btnStyle' => 'primary',
+                //     'icon' => 'fa fa-paste'
+                // ],
+                // '关闭团队奖' => [
+                //     'auth' => 'member/open_team',
+                //     'href' => "javascript:open_team(" .$id .")",
+                //     'btnStyle' => 'danger',
+                //     'icon' => 'fa fa-paste'
+                // ]                                                      
+            ];            
+        }
+          
 
     }
 

@@ -40,16 +40,19 @@
                     </div>
                 </div>
                 <div class="ibox-content">
-                    <form class="form-horizontal m-t" method="post" enctype="multipart/form-data" action="{:url('article/do_insert')}">
-                          <div class="form-group">
+                    <form class="form-horizontal m-t" method="post" enctype="multipart/form-data"
+                          action="{:url('article/do_insert')}">
+                        <div class="form-group">
                             <label class="col-sm-3 control-label">上级分类：</label>
                             <div class="input-group col-sm-4">
                                 <select name="pid" id="id" class="form-control">
                                     <option value="0">请选择</option>
                                     {foreach $list as $k=>$v}
+                                    {in name="v.id" value="3,4"}
                                     <option value="{$v['id']}">{$v['name']}</option>
+                                    {/in}
                                     {/foreach}
-                                </select>                             
+                                </select>
                             </div>
                         </div>
                         <div class="form-group">
@@ -58,45 +61,47 @@
                                 <input id="title" type="text" class="form-control" name="title" required=""
                                        aria-required="true">
                             </div>
-                        </div> 
-                   
+                        </div>
+
                         <div class="form-group draggable ui-draggable">
                             <label class="col-sm-3 control-label">显示/隐藏：</label>
                             <div class="col-sm-4">
-                                <label class="checkbox-inline"><input value="1"  name="status" type="checkbox">显示</label>                                
+                                <label class="checkbox-inline"><input value="1" name="status" type="checkbox">显示</label>
                             </div>
                         </div>
 
-                
-    <!--                     <div class="form-group">
-                            <label class="col-sm-3 control-label">标签：</label>
-                            <div class="input-group col-sm-4">
-                                <input id="auther" type="text" class="form-control" name="labels" required="" aria-required="true" />
-                                <span style="color:red">每个标签之间用/分开</span>
-                            </div>
-                        </div> -->
+
+                        <!--                     <div class="form-group">
+                                                <label class="col-sm-3 control-label">标签：</label>
+                                                <div class="input-group col-sm-4">
+                                                    <input id="auther" type="text" class="form-control" name="labels" required="" aria-required="true" />
+                                                    <span style="color:red">每个标签之间用/分开</span>
+                                                </div>
+                                            </div> -->
                         <div class="form-group">
                             <label class="col-sm-3 control-label">封面：</label>
                             <div class="input-group col-sm-4">
-                                <input  type="file"  name="pic" id="pic"/>                               
+                                <input type="file" name="pic" id="pic"/>
                             </div>
-                        </div>                          
+                        </div>
 
                         <div class="form-group">
                             <label class="col-sm-3 control-label">阅读量：</label>
                             <div class="input-group col-sm-4">
-                                <input id="quantity" type="text" class="form-control" name="quantity" required="" aria-required="true" />                             
+                                <input id="quantity" type="text" class="form-control" name="quantity" required=""
+                                       aria-required="true"/>
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-sm-3 control-label">内容：</label>
                             <div class="col-sm-12">
-                                <textarea id="myEditor" type="text" class="form-control myEditor" name="content" style="height:500px;"></textarea>
+                                <textarea id="myEditor" type="text" class="form-control myEditor" name="content"
+                                          style="height:500px;"></textarea>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="col-sm-4 col-sm-offset-3">
-                            	<input type="hidden" name="dosubmit"  value="0">
+                                <input type="hidden" name="dosubmit" value="0">
                                 <button class="btn btn-primary" type="submit">提交</button>
                             </div>
                         </div>
