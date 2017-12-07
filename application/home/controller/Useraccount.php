@@ -44,11 +44,12 @@ class Useraccount extends Base
 	public function useLP()
 	{
 		$money = UserMoneyLog::getBalance($this->userId,1);
-		return json(['status'=>200,'msg'=>'请求成功','data'=>$money]);
+		$bank = UsersModel::where('id',$this->userId)->value('bank');
+		return json(['status'=>200,'msg'=>'请求成功','data'=>['money'=>$money,'bank'=>$bank ? unserialize($bank) :'']]);
 	}
 
 	#粮票提现
-	public function  cashLP()
+	public function cashLP()
 	{	
 		$param = input('param.');
 		if (null === input('param.money')) {

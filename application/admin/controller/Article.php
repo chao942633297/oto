@@ -7,6 +7,8 @@ use app\admin\model\ArticleModel;
 use app\admin\model\ArticleclassModel;
 class Article extends Base
 {
+    protected $db;
+
 	public function _initialize(){
         parent::_initialize();
         $this->db = model('ArticleModel');
@@ -102,8 +104,9 @@ class Article extends Base
             }
             $r = $this->db->where(['id'=>$id])->data($data)->update();
             if($r){
-
-                unlink('.'.$pic);
+                if($pic){
+                    unlink('.'.$pic);
+                }
 
                 $this->success('编辑成功');
             }else{

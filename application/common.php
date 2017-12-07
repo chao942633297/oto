@@ -15,7 +15,7 @@ function qrcode($param,$level=3,$size=4){
 	$errorCorrectionLevel =intval($level) ;//容错级别 
 	$matrixPointSize = intval($size);//生成图片大小 
 	//生成二维码图片 
-    $to_url = ADMIN_URL."/home/wechat/BrowserType?param=".$param;
+    $to_url = ADMIN_URL."/home/wechat/BrowserType?unique=".$param;
 	$object = new \QRcode();
 	$img = $object->png($to_url,$url, $errorCorrectionLevel, $matrixPointSize, 2,false);
 }
@@ -78,13 +78,6 @@ function putExcel($file, $data, $tplFile = null, $skipRow = 1)
     }
 
     PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007')->save($file);
-}
-
-function is_weixin(){
-    if (strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false ) {
-        return true;
-    }
-    return false;
 }
 
 /**
@@ -342,3 +335,33 @@ function getSubtree($arr,$parent=0){
     return $subs;
 }
 
+
+/**
+
+ * 微信分享初始化
+
+ * @return array
+
+ * @author simon
+
+ */
+
+if(!function_exists('wx_share_init')){
+
+    function wx_share_init(){
+
+        $wxconfig = array();
+
+        vendor('Wxshare.class#jssdk');
+
+        $config = config('wechat');//这里配置了微信公众号的AppId和AppSecret
+
+        $jssdk =new JSSDK($config['appid'], $config['secret']);
+
+        $wxconfig = $jssdk->GetSignPackage();
+
+        return $wxconfig;
+
+    }
+
+}

@@ -16,6 +16,7 @@
 <!-- 上传轮播图 -->
 <form id="fmform" action="" method="POST" enctype="multipart/form-data">
     <input type="hidden" value="fmimg" name="imgtype" value="" />
+    <input type="hidden" name="goodImg" value="1" >
     <input id="fmimg" style="display: none;" name="img" type="file" onchange="upload('fmform','imgurl')"/>
 </form>
 <div class="wrapper wrapper-content animated fadeInRight">
@@ -202,7 +203,7 @@
             dataType:'json',
             contentType:"application/json;charset=utf-8",
             success:function(data){
-                // console.log(data);
+//                 console.log(data);
                 if(data['code'] ==1){
                     $("#"+imgid).attr('src',data['data']);
                 }

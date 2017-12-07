@@ -257,7 +257,7 @@ class Orders extends Base
     public function orderList(Request $request)
     {
         $status = $request->param('status');
-        $order = Order::all(['uid' => $this->userId, 'status' => $status]);
+        $order = Order::all(['uid' => $this->userId, 'status' => $status,'is_score'=>1]);
         $return = [];
         foreach ($order as $key => $val) {
             $return[$key]['id'] = $val['id'];

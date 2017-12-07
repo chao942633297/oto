@@ -53,7 +53,7 @@ class Notify extends Controller
                    file_put_contents('错误信息.txt','订单id:'.$order['id'].'支付金额:'.$total_fee."\n",FILE_APPEND);
                    echo 'success';
                }*/
-            if($order['is_score'] == 2){
+            if($order['is_score'] == 2){                    //充值积分
                 if($order['status'] == 1){
                     //增加用户余额
                     Db::startTrans();
@@ -71,7 +71,7 @@ class Notify extends Controller
 
 
                 }
-            }else{
+            }else{                                    //购买商品
                 if ($order['status'] == 1) {
                     Db::startTrans();
                     try {
@@ -111,7 +111,7 @@ class Notify extends Controller
             $order = Db::table('order')->where('pay_order_num',$orderCode)->find();
             if($arr['trade_status'] == 'TRADE_SUCCESS'){
                 $total_fee = $arr['total_amount'];
-                if($order['is_score'] == 2){
+                if($order['is_score'] == 2){             //充值积分
                     if($order['status'] == 1){
                         //增加用户余额
                         Db::startTrans();
@@ -127,7 +127,7 @@ class Notify extends Controller
                             return 'fail';
                         }
                     }
-                }else{
+                }else{                              //购买商品
                     if($order['status'] == 1){
                         Db::startTrans();
                         try {

@@ -24,6 +24,7 @@
 <!-- 图片上传 -->
 <form id="fmform" action="" method="POST" enctype="multipart/form-data">
     <input type="hidden" value="fmimg" name="imgtype"/>
+    <input type="hidden" name="goodImg" value="1" >
     <input id="fmimg" style="display: none;" name="img" type="file" onchange="upload('fmform','imgurl')"/>
 </form>
 <input type="file" name="files" id="canshuurl" class="layui-upload-file" style="display: none;">
