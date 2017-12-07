@@ -14,7 +14,7 @@ class Index extends Controller{
      */
     public function index(){
         $carousel = Db::table('carousel')->field('pic,url')->where(['status'=>1])->select();       //轮播图
-        $class = Db::table('good_class')->field('id,name,img')->where('status',1)->select();    //商品分类
+        $class = Db::table('good_class')->field('id,name,img')->where('status',1)->limit(4)->select();    //商品分类
         $lianArea = Db::table('good')
             ->where(['type'=>1,'status'=>1,'recommend'=>1])
             ->select();
@@ -28,6 +28,18 @@ class Index extends Controller{
             'good'=>['lianArea'=>$lianArea,'scoreArea'=>$scoreArea,'moneyArea'=>$moneyArea],
             'msg'=>'查询成功','code'=>200]);
     }
+
+    /**
+     * @return \think\response\Json
+     * 首页播报,快报
+     */
+    public function broadcast(){
+        $user = Db::table('users')->field('phone')->where('type',2)->order('updated_at','desc')->select();
+        return json(['data'=>$user,'msg'=>'查询成功','code'=>200]);
+    }
+
+
+
 
     /**
      * 更多分类

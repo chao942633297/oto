@@ -33,7 +33,14 @@ class Shop extends Controller
 	public function shopDetail()
 	{
 		$shop = Shops::where('id',input('param.id'))->find();
-		
-		return json(['data' => $shop ? $shop :[], 'msg' => '查询成功', 'status' => 200]);
+		$imgs = [];
+		if($shop['lunbo']){
+			$img = unserialize($shop['lunbo']);
+			unset($shop['lunbo']);
+			foreach($img as $key=>$val){
+				$imgs['lunbo'][$key]['pic'] = $val;
+			}
+		}
+		return json(['data' => $shop ? $shop :[],'img'=>$imgs ,'msg' => '查询成功', 'status' => 200]);
 	}
 }

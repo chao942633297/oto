@@ -3,6 +3,7 @@ namespace app\home\controller;
 
 use app\admin\model\UsersModel;
 
+use app\home\model\RowModel;
 use think\Controller;
 use think\Db;
 use service\Wechat as Wechats;
@@ -12,27 +13,61 @@ class User extends Base
 	#用户ID
 	protected $userId;
 	
-	public function _initialize()
+	public function __construct()
 	{
 		$this->userId = session('uid');
-		parent::_initialize();
+		parent::__construct();
 
 	}
 
-	#根据unique获取用户信息
-	public function getUserPhoneByUnique()
+	#用户登录状态
+	public function userLoginStatus()
 	{
-		$user = UsersModel::where('id',input('param.unique'))->value('phone');
-		return json(['status'=>200,'msg'=>'ok','data'=>$user]);
+		if (empty($this->userId) || null === session('uid')) {
+			return json(['status'=>2000,'msg'=>'请登录']);
+		}else{
+			return json(['status'=>200,'msg'=>'已登录']);
+		}
 	}
 
 
 	#根据id获取用户信息
 	public function getUserInfoById()
 	{
-		$user = UsersModel::where('id',$this->userId)->field('headimg,nickname,type')->find();
-		return json(['status'=>200,'msg'=>'ok','data'=>$user]);
+		$user = Db::table('users')->where('id',$this->userId)->find();
+		$return = [];
+		$return['headimg'] = $user['headimg'];
+		$return['nickname'] = $user['nickname'];
+		$return['type'] = $user['type'];
+		$return['unique'] = $user['unique'];
+		$return['is_union'] = $user['is_union'];
+		//判断用户成为合伙人后的时间,(24小时后.冻结粮票转换未粮票)
+		$time = date('Y-m-d H:i:s',time() - 24 * 3600 );
+		if($user['type'] == 2 && $user['type_time'] < $time ){
+			if(!empty($user['frozen_price'])){
+				$user['balance'] += $user['frozen_price'];
+				$user['frozen_price'] = 0;
+				Db::table('users')->update($user);
+			}
+		}
+		return json(['status'=>200,'msg'=>'ok','data'=>$return]);
 	}
+
+	//个人中心播报
+	public 	function broadcast(){
+		$row = new RowModel();
+		$rowData = $row->where('status',1)->order('id','desc')->select();
+		$return = [];
+		foreach($rowData as $key=>$val){
+			if(!empty($val['account']['money'])){
+				$return[$key]['phone'] = $val['user']['phone'];
+				$return[$key]['money'] = $val['account']['money'];
+			}
+		}
+		return json(['data'=>$return,'msg'=>'播报查询成功','code'=>200]);
+	}
+
+
 
 	#点击设置进去
 	public function userSetting()
@@ -117,7 +152,7 @@ class User extends Base
 			return json(['status'=>-1,'msg'=>'选择性别']);
 		}
 		$model = new UsersModel();
-		$result = $model->allowField(true)->save($param);
+		$result = $model->allowField(true)->save($param,['id'=>$this->userId]);
 		if ($result) {
 			return json(['status'=>200,'msg'=>'编辑成功']);
 		}
@@ -128,17 +163,23 @@ class User extends Base
 	#申请线下联盟商
 	public function applyLineUnionMerchant()
 	{
-
 		$param = input('param.');
 		$param['uid'] = $this->userId;
 		$param['created_at'] = time();
 		if (empty($param['license'])) {
 			return json(['status'=>-1,'msg'=>'请上传营业执照']);
 		}
-		if (empty($param['address_detail'])) {
-			return json(['status'=>-1,'msg'=>'请上传营业执照']);
-		}	
+		if (empty($param['address'])) {
+			return json(['status'=>-1,'msg'=>'请填写地址']);
+		}
 
+		$user = UsersModel::where('id',$this->userId)->field('nickname,phone')->find();
+		if (empty($param['name'])) {
+			$param['name'] = $user['nickname'];
+		}	
+		if (empty($param['phone'])) {
+			$param['phone'] = $user['phone'];
+		}
 		$result = Db::table('union_apply')->insert($param);
 		if ($result) {
 			return json(['status'=>200,'msg'=>'提交成功']);
@@ -165,8 +206,18 @@ class User extends Base
 			$data['ordinary'] = [];
 			$data['vip'] = [];
 		}else{
-			$ptuser  = UsersModel::where('pid',$this->userId)->where('type',1)->field('headimg,id,nickname,created_at,phone')->select();
-			$vipuser  = UsersModel::where('pid',$this->userId)->where('type',2)->field('headimg,id,nickname,created_at,phone')->select();
+			$ptuser  = UsersModel::where('pid',$this->userId)->where('type',1)->field('headimg,id,nickname,created_at,phone,account')->select();
+			if (!empty($ptuser)) {
+				foreach ($ptuser as $k => $v) {
+					$ptuser[$k]['created_at'] = date('Y-m-d H:i:s',$v->created_at);
+				}
+			}
+			$vipuser  = UsersModel::where('pid',$this->userId)->where('type',2)->field('headimg,id,nickname,created_at,phone,account')->select();
+			if (!empty($vipuser)) {
+				foreach ($vipuser as $k => $v) {
+					$vipuser[$k]['created_at'] = date('Y-m-d H:i:s',$v->created_at);
+				}
+			}
 			$data['count'] = $count;
 			$data['ordinary'] = $ptuser;
 			$data['vip'] = $vipuser;
@@ -247,9 +298,10 @@ class User extends Base
 		$datas['source'] = $this->userId;
 		$datas['created_at'] = time();
 		try {
-			$res = Db::table('integral')->insert($data);
+			$res  = Db::table('integral')->insert($data);
 			$res1 = Db::table('integral')->insert($datas);
-			if ($res && $res1) {
+			$res2 =  Db::table('users')->where('id',$this->userId)->setDec('score',$datas['value']); //更新用户表用户的积分字段
+			if ($res && $res1 && $res2) {
 				Db::commit();
 				return json(['status'=>200,'msg'=>'支付成功']);
 			}
@@ -260,8 +312,20 @@ class User extends Base
 		}	
 	}
 
+	#获取用户银行卡信息
+	public function getUserBankInfo()
+	{
+		$data = UsersModel::where('id',$this->userId)->field('bank,card')->find();
+		$data['bank'] = unserialize($data['bank']);
+		return json(['status'=>200,'msg'=>'请求成功','data'=>$data]);
+	}
 
 
-
+	#根据用户id获取用户手机号
+	public function getPhoneById()
+	{
+		$phone = UsersModel::where('id',$this->userId)->value('phone');
+		return json(['status'=>200,'msg'=>'请求成功','data'=>$phone]);
+	}
 
 }
