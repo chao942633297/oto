@@ -45,7 +45,7 @@ class Index extends Controller{
      * 更多分类
      */
     public function moreClass(){
-        $class = Db::table('good_class')->field('id,name,img')->where('status',1)->select();
+        $class = Db::table('good_class')->field('id,name,img')->select();
 
         return json(['data'=>$class,'msg'=>'查询成功','code'=>200]);
     }

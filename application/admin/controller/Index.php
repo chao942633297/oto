@@ -6,6 +6,7 @@ use app\admin\model\Order as Orders;
 use app\home\model\CashRecord;
 use app\admin\model\UsersModel;
 use app\admin\model\UserMoneyLog;
+use think\Db;
 
 
 class Index extends Base
@@ -32,27 +33,52 @@ class Index extends Base
         $end_time = mktime(23,59,59,date("m",$t),date("d",$t),date("Y",$t)); //当天结束时间
 
         #今日注册用户数量
-        $user = UsersModel::whereBetween('created_at',[$start_time,$end_time])->count();
+        $totalUser = Db::table('users')->count();
+        $dayUser = Db::table('users')->whereTime('created_at','today')->count();
 
         #今日订单数量
-        $order = Orders::whereBetween('created_at',[$start_time,$end_time])->where('status','>',1)->count();
+        $totalOrder = Db::table('order')->where('status','>',1)->count();
+        $dayOrder = Db::table('order')->whereTime('created_at','today')->where('status','>',1)->count();
 
         #订单总额
-        $orderMoney = Orders::where('status','>',1)->sum('real_price');
+        $totalOrderMoney = Db::table('order')->where('status','>',1)->sum('real_price');
         #今日订单金额
-        $todayOrderMoney = Orders::where('status','>',1)->whereBetween('created_at',[$start_time,$end_time])->sum('real_price');
+        $dayOrderMoney = Db::table('order')->where('status','>',1)->whereTime('created_at','today')->sum('real_price');
+
+        //会员余额
+        $totalBalance = Db::table('users')->sum('balance');       //粮票
+        $frozenPrice = Db::table('users')->sum('frozen_price');   //冻结粮票
+        $rechargeCard = Db::table('users')->sum('recharge_card');   //充值卡余额
+        $totalScore = Db::table('users')->where('is_union',1)->sum('score');   //用户积分
+        $shopScore = Db::table('users')->where('is_union',2)->sum('score');   //商家积分
+
+        #总发放红包金额
+        $redMoney = UserMoneyLog::where('type',">=",7)->sum('money');
 
         #今日发放红包金额
         $todayRedMoney = UserMoneyLog::where('type',">=",7)->whereBetween('created_at',[$start_time,$end_time])->sum('money');
 
-        #总发放红包金额
-        $redMoney = UserMoneyLog::where('type',">=",7)->sum('money');
-        $this->assign('user',$user);
-        $this->assign('order',$order);
+        //提现统计
+        $withdrawMoney = Db::table('withdrawals')->where('status',2)->sum('real_money');
+        $dayWithdraw = Db::table('withdrawals')->whereTime('created_at','today')->where('status',2)->sum('real_money');
+        $reject = Db::table('withdrawals')->whereTime('created_at','today')->where('status',3)->sum('real_money');
+
+        $this->assign('totalUser',$totalUser);
+        $this->assign('dayUser',$dayUser);
+        $this->assign('totalOrder',$totalOrder);
+        $this->assign('dayOrder',$dayOrder);
+        $this->assign('totalOrderMoney',$totalOrderMoney);
+        $this->assign('dayOrderMoney',$dayOrderMoney);
+        $this->assign('totalBalance',$totalBalance);
+        $this->assign('frozenPrice',$frozenPrice);
+        $this->assign('rechargeCard',$rechargeCard);
+        $this->assign('totalScore',$totalScore);
+        $this->assign('shopScore',$shopScore);
         $this->assign('redMoney',$redMoney);
-        $this->assign('orderMoney',$orderMoney);
         $this->assign('todayRedMoney',$todayRedMoney);
-        $this->assign('todayOrderMoney',$todayOrderMoney);
+        $this->assign('withdrawMoney',$withdrawMoney);
+        $this->assign('dayWithdraw',$dayWithdraw);
+        $this->assign('reject',$reject);
         return $this->fetch('index');
     }
 
